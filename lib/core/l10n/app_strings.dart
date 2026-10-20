@@ -27,6 +27,13 @@ abstract final class AppStrings {
   static const String loginSupport =
       'Usa el correo y la contraseña con los que te registraste.';
 
+  // Validación de formularios.
+  static const String validationEmailRequired =
+      'Escribe tu correo electrónico.';
+  static const String validationEmailInvalid =
+      'Escribe un correo válido, por ejemplo nombre@correo.com.';
+  static const String validationPasswordRequired = 'Escribe tu contraseña.';
+
   // Inicio (marcador temporal hasta la sesión S08).
   static const String homeTitle = 'Inicio';
   static const String homeSessionTitle = 'Sesión iniciada';
