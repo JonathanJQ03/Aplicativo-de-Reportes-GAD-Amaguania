@@ -177,6 +177,21 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserRole> loadRole(String uid) async {
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> snapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 8));
+      return UserRole.fromFirestore(snapshot.data()?['role']);
+    } catch (_) {
+      // Sin conexión o sin perfil, el rol seguro es el de menor privilegio.
+      return UserRole.vecino;
+    }
+  }
+
+  @override
   Future<void> sendVerificationEmail() async {
     final User? user = _auth.currentUser;
     if (user == null) {
@@ -298,7 +313,9 @@ class FirebaseAuthRepository implements AuthRepository {
     return AppUser(
       uid: user.uid,
       email: user.email ?? '',
-      // TODO(S07): cargar el rol real desde Firestore.
+      // El rol real se consulta aparte con [loadRole] para no bloquear el
+      // stream de autenticación. Mientras llega, se usa el rol de menor
+      // privilegio.
       role: UserRole.vecino,
       displayName: user.displayName,
       photoUrl: user.photoURL,

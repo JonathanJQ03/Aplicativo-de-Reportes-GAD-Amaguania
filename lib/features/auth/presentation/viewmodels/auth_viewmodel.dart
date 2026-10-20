@@ -31,6 +31,10 @@ class AuthViewModel extends ChangeNotifier {
         _notify();
       },
     );
+    final AppUser? user = _user;
+    if (user != null) {
+      unawaited(_loadRole(user));
+    }
     _scheduleDevelopmentVerification();
   }
 
@@ -56,6 +60,8 @@ class AuthViewModel extends ChangeNotifier {
   String? _pendingEmail;
   bool _passwordResetSent = false;
   bool _developmentEmailVerified = false;
+  bool _isRoleLoading = false;
+  int _roleRequestId = 0;
   Timer? _developmentVerificationTimer;
   bool _disposed = false;
 
@@ -66,6 +72,15 @@ class AuthViewModel extends ChangeNotifier {
       (_user?.emailVerified ?? false) || _developmentEmailVerified;
   bool get needsEmailVerification => isAuthenticated && !isEmailVerified;
   bool get isLoading => _isLoading;
+
+  /// Indica si se está consultando el rol del perfil en Firestore.
+  bool get isRoleLoading => _isRoleLoading;
+
+  /// Indica si el usuario actual es administrador del GAD.
+  ///
+  /// Mientras el rol se está cargando devuelve `false`; las rutas de
+  /// administración esperan a que [isRoleLoading] termine antes de decidir.
+  bool get isAdmin => _user?.role == UserRole.administrador;
   String? get errorMessage => _errorMessage;
   String? get infoMessage => _infoMessage;
   String? get pendingEmail => _pendingEmail;
@@ -376,10 +391,45 @@ class AuthViewModel extends ChangeNotifier {
     _status = user == null
         ? AuthStatus.unauthenticated
         : AuthStatus.authenticated;
-    if (user == null || user.emailVerified) {
+    if (user == null) {
+      // Invalida cualquier consulta de rol que siga en curso.
+      _roleRequestId++;
+      _isRoleLoading = false;
       _pendingEmail = null;
+    } else {
+      if (user.emailVerified) {
+        _pendingEmail = null;
+      }
+      unawaited(_loadRole(user));
     }
     _scheduleDevelopmentVerification();
+    _notify();
+  }
+
+  /// Consulta el rol real en Firestore sin bloquear la sesión.
+  ///
+  /// Si la consulta falla o el usuario cambia mientras se espera, se conserva
+  /// el rol de menor privilegio. Un fallo nunca debe conceder acceso al panel.
+  Future<void> _loadRole(AppUser user) async {
+    final int requestId = ++_roleRequestId;
+    _isRoleLoading = true;
+    _notify();
+
+    UserRole role = UserRole.vecino;
+    try {
+      role = await repository.loadRole(user.uid);
+    } catch (_) {
+      role = UserRole.vecino;
+    }
+
+    if (_disposed || requestId != _roleRequestId || _user?.uid != user.uid) {
+      return;
+    }
+
+    if (role != _user!.role) {
+      _user = _user!.copyWith(role: role);
+    }
+    _isRoleLoading = false;
     _notify();
   }
 

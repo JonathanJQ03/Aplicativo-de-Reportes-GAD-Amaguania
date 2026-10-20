@@ -29,10 +29,15 @@ class FakeAuthRepository implements AuthRepository {
   AuthFailure? emailChangeFailure;
   AuthFailure? passwordResetFailure;
   AppUser? reloadResult;
+  UserRole? role;
+  Object? roleFailure;
+  Completer<UserRole>? pendingRole;
   Completer<AppUser>? pendingSignIn;
   Completer<AppUser>? pendingSignUp;
   int signInCalls = 0;
   int signUpCalls = 0;
+  int loadRoleCalls = 0;
+  String? lastRoleUid;
   int signOutCalls = 0;
   int sendVerificationCalls = 0;
   int reloadCalls = 0;
@@ -110,6 +115,19 @@ class FakeAuthRepository implements AuthRepository {
     _save(user);
     sendVerificationCalls++;
     return user;
+  }
+
+  @override
+  Future<UserRole> loadRole(String uid) async {
+    loadRoleCalls++;
+    lastRoleUid = uid;
+    if (roleFailure != null) {
+      throw roleFailure!;
+    }
+    if (pendingRole != null) {
+      return pendingRole!.future;
+    }
+    return role ?? _currentUser?.role ?? UserRole.vecino;
   }
 
   @override
