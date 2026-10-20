@@ -1,0 +1,76 @@
+/// Textos visibles de la aplicación, en español.
+///
+/// Todo texto que vea el usuario vive aquí. Los widgets no deben declarar
+/// cadenas literales visibles.
+abstract final class AppStrings {
+  // Identidad.
+  static const String appName = 'VeciApp';
+  static const String gadName = 'Gobierno Autónomo Descentralizado de Amaguaña';
+
+  // Acciones comunes.
+  static const String loading = 'Cargando';
+  static const String retry = 'Reintentar';
+  static const String signOut = 'Cerrar sesión';
+
+  // Inicio de sesión.
+  static const String loginGreeting = 'Bienvenido a VeciApp';
+  static const String loginSubtitle =
+      'Reporta fugas de agua y mascotas en tu parroquia. '
+      'Ingresa para continuar.';
+  static const String emailLabel = 'Correo electrónico';
+  static const String emailHint = 'Ej.: nombre@correo.com';
+  static const String passwordLabel = 'Contraseña';
+  static const String passwordHint = 'Escribe tu contraseña';
+  static const String showPassword = 'Mostrar contraseña';
+  static const String hidePassword = 'Ocultar contraseña';
+  static const String signIn = 'Ingresar';
+  static const String loginSupport =
+      'Usa el correo y la contraseña con los que te registraste.';
+
+  // Inicio (marcador temporal hasta la sesión S08).
+  static const String homeTitle = 'Inicio';
+  static const String homeSessionTitle = 'Sesión iniciada';
+  static const String homeSessionBody =
+      'Ya puedes usar VeciApp. El panel de reportes estará disponible '
+      'en la siguiente etapa.';
+
+  // Títulos de pantallas pendientes de implementar.
+  static const String registerTitle = 'Registro de vecino';
+  static const String verifyCodeTitle = 'Verificar código';
+  static const String forgotPasswordTitle = 'Recuperar contraseña';
+  static const String profileTitle = 'Mi perfil';
+  static const String myReportsTitle = 'Mis reportes';
+  static const String newLeakReportTitle = 'Nuevo reporte de fuga';
+  static const String newPetReportTitle = 'Nuevo reporte de mascota';
+  static const String reportDetailTitle = 'Detalle del reporte';
+
+  // Errores de autenticación.
+  static const String authMissingCredentials =
+      'Escribe tu correo y tu contraseña para ingresar.';
+  static const String authInvalidCredentials =
+      'El correo o la contraseña no son correctos. Revísalos e intenta de nuevo.';
+  static const String authUserDisabled =
+      'Tu cuenta está suspendida. Comunícate con el GAD de Amaguaña '
+      'para más información.';
+  static const String authTooManyRequests =
+      'Hubo demasiados intentos. Espera unos minutos e intenta de nuevo.';
+  static const String authNetwork =
+      'No pudimos conectar. Revisa tu conexión a internet e intenta de nuevo.';
+  static const String authNotAllowed =
+      'El acceso con correo y contraseña no está disponible. '
+      'Comunícate con el GAD de Amaguaña.';
+  static const String authUnexpected =
+      'No pudimos iniciar sesión. Intenta de nuevo en unos momentos.';
+  static const String authUnexpectedSignOut =
+      'No pudimos cerrar la sesión. Intenta de nuevo en unos momentos.';
+
+  // Panel de administración (stub hasta S15).
+  static const String adminPanelTitle = 'Panel de administración';
+  static const String adminPanelComingSoon =
+      'El panel para el personal del GAD estará disponible próximamente.';
+
+  // Arranque.
+  static const String startupErrorTitle = 'No pudimos iniciar la aplicación';
+  static const String startupErrorBody =
+      'Revisa tu conexión a internet e intenta abrir la aplicación de nuevo.';
+}

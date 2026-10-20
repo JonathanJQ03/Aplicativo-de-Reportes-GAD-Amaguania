@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/app_strings.dart';
+
 /// Pantalla de detalle de un reporte.
 ///
 /// TODO: mostrar fotos, descripción, ubicación en el mapa, fechas y estado
@@ -13,7 +15,7 @@ class ReportDetailView extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'Detalle del reporte',
+          AppStrings.reportDetailTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),
