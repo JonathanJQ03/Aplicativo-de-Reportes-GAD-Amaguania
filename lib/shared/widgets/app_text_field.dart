@@ -30,6 +30,9 @@ class AppTextField extends StatefulWidget {
     this.prefixIcon,
     this.maxLines = 1,
     this.inputFormatters,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final TextEditingController controller;
@@ -48,6 +51,9 @@ class AppTextField extends StatefulWidget {
   final IconData? prefixIcon;
   final int maxLines;
   final List<TextInputFormatter>? inputFormatters;
+  final bool autocorrect;
+  final bool enableSuggestions;
+  final TextCapitalization textCapitalization;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -94,6 +100,9 @@ class _AppTextFieldState extends State<AppTextField> {
               textInputAction: widget.textInputAction,
               autofillHints: widget.autofillHints,
               inputFormatters: widget.inputFormatters,
+              autocorrect: widget.autocorrect,
+              enableSuggestions: widget.enableSuggestions,
+              textCapitalization: widget.textCapitalization,
               onChanged: widget.onChanged,
               onSubmitted: widget.onSubmitted,
               onTapOutside: (_) => FocusScope.of(context).unfocus(),

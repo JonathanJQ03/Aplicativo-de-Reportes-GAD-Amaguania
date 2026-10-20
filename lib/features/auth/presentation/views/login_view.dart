@@ -6,6 +6,7 @@ import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/validators/validators.dart';
 import '../../../../shared/widgets/app_banner.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
@@ -25,12 +26,17 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
+
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocus.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
@@ -42,8 +48,16 @@ class _LoginViewState extends State<LoginView> {
     }
 
     FocusScope.of(context).unfocus();
+    if (auth.errorMessage != null) {
+      auth.clearError();
+    }
+
+    if (!_validateFields()) {
+      return;
+    }
+
     final bool success = await auth.signIn(
-      email: _emailController.text,
+      email: _emailController.text.trim(),
       password: _passwordController.text,
     );
 
@@ -55,7 +69,60 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  void _clearError() {
+  bool _validateFields() {
+    final String? emailError = AppValidators.email(_emailController.text);
+    final String? passwordError = AppValidators.loginPassword(
+      _passwordController.text,
+    );
+
+    setState(() {
+      _emailError = emailError;
+      _passwordError = passwordError;
+    });
+
+    if (emailError != null) {
+      _emailFocus.requestFocus();
+      return false;
+    }
+    if (passwordError != null) {
+      _passwordFocus.requestFocus();
+      return false;
+    }
+    return true;
+  }
+
+  void _handleEmailSubmitted(String _) {
+    final String? emailError = AppValidators.email(_emailController.text);
+    setState(() {
+      _emailError = emailError;
+    });
+
+    if (emailError != null) {
+      _emailFocus.requestFocus();
+      return;
+    }
+    _passwordFocus.requestFocus();
+  }
+
+  void _onEmailChanged(String _) {
+    if (_emailError != null) {
+      setState(() {
+        _emailError = null;
+      });
+    }
+    _clearAuthError();
+  }
+
+  void _onPasswordChanged(String _) {
+    if (_passwordError != null) {
+      setState(() {
+        _passwordError = null;
+      });
+    }
+    _clearAuthError();
+  }
+
+  void _clearAuthError() {
     final AuthViewModel auth = context.read<AuthViewModel>();
     if (auth.errorMessage != null) {
       auth.clearError();
@@ -123,13 +190,17 @@ class _LoginViewState extends State<LoginView> {
                     ],
                     AppTextField(
                       controller: _emailController,
+                      focusNode: _emailFocus,
                       label: AppStrings.emailLabel,
                       hint: AppStrings.emailHint,
+                      errorText: _emailError,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.email],
-                      onChanged: (_) => _clearError(),
-                      onSubmitted: (_) => _passwordFocus.requestFocus(),
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      onChanged: _onEmailChanged,
+                      onSubmitted: _handleEmailSubmitted,
                     ),
                     const SizedBox(height: AppSpacing.sp4),
                     AppTextField(
@@ -137,10 +208,13 @@ class _LoginViewState extends State<LoginView> {
                       focusNode: _passwordFocus,
                       label: AppStrings.passwordLabel,
                       hint: AppStrings.passwordHint,
+                      errorText: _passwordError,
                       obscureText: true,
                       textInputAction: TextInputAction.done,
                       autofillHints: const [AutofillHints.password],
-                      onChanged: (_) => _clearError(),
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      onChanged: _onPasswordChanged,
                       onSubmitted: (_) => _submit(),
                     ),
                     const SizedBox(height: AppSpacing.sp5),
