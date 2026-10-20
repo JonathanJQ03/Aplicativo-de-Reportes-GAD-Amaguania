@@ -203,8 +203,9 @@ flutter run \
 
 También puedes configurar los archivos nativos con `flutterfire configure` y
 ejecutar con `--dart-define=FIREBASE_USE_EMULATOR=false`. Con un proyecto real,
-Firebase sí envía el enlace al correo registrado. El **código de 6 dígitos**
-todavía no está implementado; el flujo actual usa un enlace.
+Firebase envía al correo tanto el enlace de verificación como el de recuperación
+de contraseña. El **código de 6 dígitos** para verificar la cuenta todavía no
+está implementado; el flujo actual usa un enlace.
 
 ## Seguridad
 

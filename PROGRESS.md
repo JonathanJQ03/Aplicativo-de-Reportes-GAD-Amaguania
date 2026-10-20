@@ -138,7 +138,8 @@ pendiente** y no se inicia S07 hasta que el usuario escriba “continuar”.
 - (2026-10-20) La recuperación de contraseña usa el **enlace de Firebase**, no
   un código propio. El mensaje es genérico para no revelar si el correo existe;
   al completar el cambio, la contraseña anterior deja de funcionar.
-- (2026-10-20) La rama de S06 es `feature/s06-consentimiento-recuperacion`.
+- (2026-10-20) La rama `feature/s06-consentimiento-recuperacion` se subió al
+  remoto y S06 se integró en `main` con un merge. S07 parte de `main`.
 
 ## Deuda y TODO
 

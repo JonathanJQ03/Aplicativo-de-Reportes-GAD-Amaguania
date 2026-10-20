@@ -2,7 +2,7 @@
 
 **Última sesión cerrada:** S06 — Consentimiento LOPDP y recuperación de contraseña
 **Fecha:** 2026-10-20
-**Rama:** `feature/s06-consentimiento-recuperacion`
+**Rama:** `main` (S06 integrada)
 **Siguiente sesión:** S07 — Roles y control de acceso
 
 > Este documento es un apoyo para retomar el trabajo. La fuente de verdad del
@@ -135,9 +135,10 @@ Puntos importantes:
 
 ## 5. Estado de Git
 
-- Rama de S06: `feature/s06-consentimiento-recuperacion`.
-- `main` contiene S00–S05. La rama de S06 se integrará siguiendo el mismo
-  proceso de las sesiones anteriores.
+- `main` contiene S00–S06.
+- La rama `feature/s06-consentimiento-recuperacion` se integró con un merge y se
+  conserva como historial.
+- S07 debe crear su rama desde `main`.
 - `AGENTS.md` y `DESIGN.md` siguen sin versionar en la raíz. No borrarlos ni
   commitearlos sin confirmar con el usuario.
 - `android/gradle.properties` tiene un ajuste local para compilar en este equipo
