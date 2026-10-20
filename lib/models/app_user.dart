@@ -22,6 +22,7 @@ class AppUser {
     this.displayName,
     this.cedula,
     this.photoUrl,
+    this.emailVerified = false,
   });
 
   /// Identificador único del usuario (Firebase Auth uid).
@@ -41,6 +42,12 @@ class AppUser {
 
   /// URL de la foto de perfil en Firebase Storage.
   final String? photoUrl;
+
+  /// Indica si Firebase Auth ya confirmó el correo electrónico.
+  ///
+  /// Mientras sea `false`, el router mantiene al usuario en la pantalla de
+  /// verificación y no permite entrar a la aplicación.
+  final bool emailVerified;
 
   // TODO: crear factory AppUser.fromMap(Map<String, dynamic> map).
   // TODO: crear Map<String, dynamic> toMap().

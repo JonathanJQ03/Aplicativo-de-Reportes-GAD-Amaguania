@@ -8,6 +8,9 @@ enum AuthFailureReason {
   notAllowed,
   emailAlreadyInUse,
   weakPassword,
+  requiresRecentLogin,
+  verificationEmailFailed,
+  emailChangeFailed,
   profileCreationFailed,
   unknown,
 }

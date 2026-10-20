@@ -92,6 +92,9 @@ class FirebaseAuthRepository implements AuthRepository {
         phone: phone?.trim(),
         displayName: displayName,
       );
+      // La cuenta ya existe; si el envío falla, la pantalla de verificación
+      // permite reenviarlo sin perder el registro.
+      await _sendVerificationEmailQuietly(user);
 
       return AppUser(
         uid: user.uid,
@@ -99,6 +102,7 @@ class FirebaseAuthRepository implements AuthRepository {
         role: UserRole.vecino,
         displayName: displayName,
         photoUrl: user.photoURL,
+        emailVerified: user.emailVerified,
       );
     } on FirebaseAuthException catch (error) {
       throw AuthFailure(authFailureReasonForCode(error.code));
@@ -151,6 +155,100 @@ class FirebaseAuthRepository implements AuthRepository {
     await batch.commit();
   }
 
+  /// Envía la verificación sin hacer fallar el registro si Firebase no puede
+  /// entregar el correo. El usuario puede reenviarlo desde la pantalla de
+  /// verificación.
+  Future<void> _sendVerificationEmailQuietly(User user) async {
+    try {
+      await user.sendEmailVerification();
+    } on FirebaseAuthException {
+      // No se pierde la cuenta; el reenvío está disponible después.
+    }
+  }
+
+  @override
+  Future<void> sendVerificationEmail() async {
+    final User? user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure(AuthFailureReason.unknown);
+    }
+    try {
+      await user.sendEmailVerification();
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure(_emailActionFailure(error, isChange: false));
+    }
+  }
+
+  @override
+  Future<AppUser?> reloadCurrentUser() async {
+    final User? user = _auth.currentUser;
+    if (user == null) {
+      return null;
+    }
+    try {
+      await user.reload();
+      final AppUser? refreshed = _toAppUser(_auth.currentUser);
+      if (refreshed == null) {
+        return null;
+      }
+      if (refreshed.emailVerified) {
+        await _syncPrivateEmail(refreshed);
+      }
+      return refreshed;
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure(authFailureReasonForCode(error.code));
+    }
+  }
+
+  @override
+  Future<void> requestEmailChange(String newEmail) async {
+    final User? user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure(AuthFailureReason.unknown);
+    }
+    try {
+      await user.verifyBeforeUpdateEmail(newEmail.trim());
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure(_emailActionFailure(error, isChange: true));
+    }
+  }
+
+  /// Mantiene sincronizado el correo privado cuando Auth confirma uno nuevo.
+  ///
+  /// Si la lectura o la escritura fallan, la verificación de la cuenta sigue
+  /// siendo válida; el dato se puede corregir en una próxima recarga.
+  Future<void> _syncPrivateEmail(AppUser user) async {
+    try {
+      final DocumentReference<Map<String, dynamic>> reference = _firestore
+          .collection('users_private')
+          .doc(user.uid);
+      final DocumentSnapshot<Map<String, dynamic>> snapshot = await reference
+          .get();
+      if (!snapshot.exists || snapshot.data()?['email'] == user.email) {
+        return;
+      }
+      await reference.update(<String, dynamic>{'email': user.email});
+    } catch (_) {
+      // No bloquear el acceso por un problema de sincronización del perfil.
+    }
+  }
+
+  AuthFailureReason _emailActionFailure(
+    FirebaseAuthException error, {
+    required bool isChange,
+  }) {
+    return switch (error.code) {
+      'requires-recent-login' => AuthFailureReason.requiresRecentLogin,
+      'email-already-in-use' => AuthFailureReason.emailAlreadyInUse,
+      'too-many-requests' => AuthFailureReason.tooManyRequests,
+      'network-request-failed' => AuthFailureReason.network,
+      _ =>
+        isChange
+            ? AuthFailureReason.emailChangeFailed
+            : AuthFailureReason.verificationEmailFailed,
+    };
+  }
+
   @override
   Future<void> signOut() async {
     try {
@@ -171,6 +269,7 @@ class FirebaseAuthRepository implements AuthRepository {
       role: UserRole.vecino,
       displayName: user.displayName,
       photoUrl: user.photoURL,
+      emailVerified: user.emailVerified,
     );
   }
 }
@@ -190,6 +289,7 @@ AuthFailureReason authFailureReasonForCode(String code) {
     'operation-not-allowed' => AuthFailureReason.notAllowed,
     'email-already-in-use' => AuthFailureReason.emailAlreadyInUse,
     'weak-password' => AuthFailureReason.weakPassword,
+    'requires-recent-login' => AuthFailureReason.requiresRecentLogin,
     _ => AuthFailureReason.unknown,
   };
 }
