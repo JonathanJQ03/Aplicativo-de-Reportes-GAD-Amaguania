@@ -419,5 +419,97 @@ void main() {
       expect(viewModel.pendingEmail, isNull);
       expect(viewModel.errorMessage, AppStrings.authRequiresRecentLogin);
     });
+
+    test('carga el rol real al restaurar la sesión', () async {
+      final FakeAuthRepository roleRepository = FakeAuthRepository(
+        initialUser: _user,
+      )..role = UserRole.administrador;
+      final AuthViewModel roleViewModel = AuthViewModel(
+        repository: roleRepository,
+      );
+      addTearDown(() async {
+        roleViewModel.dispose();
+        await roleRepository.dispose();
+      });
+
+      expect(roleViewModel.isRoleLoading, isTrue);
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(roleRepository.loadRoleCalls, 1);
+      expect(roleRepository.lastRoleUid, _user.uid);
+      expect(roleViewModel.currentUser?.role, UserRole.administrador);
+      expect(roleViewModel.isAdmin, isTrue);
+      expect(roleViewModel.isRoleLoading, isFalse);
+    });
+
+    test('conserva el rol de vecino si la consulta del rol falla', () async {
+      final FakeAuthRepository roleRepository = FakeAuthRepository(
+        initialUser: _user,
+      )..roleFailure = Exception('sin conexión');
+      final AuthViewModel roleViewModel = AuthViewModel(
+        repository: roleRepository,
+      );
+      addTearDown(() async {
+        roleViewModel.dispose();
+        await roleRepository.dispose();
+      });
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(roleViewModel.currentUser?.role, UserRole.vecino);
+      expect(roleViewModel.isAdmin, isFalse);
+      expect(roleViewModel.isRoleLoading, isFalse);
+    });
+
+    test('espera la consulta del rol antes de conceder acceso', () async {
+      final FakeAuthRepository roleRepository = FakeAuthRepository(
+        initialUser: _user,
+      )..pendingRole = Completer<UserRole>();
+      final AuthViewModel roleViewModel = AuthViewModel(
+        repository: roleRepository,
+      );
+      addTearDown(() async {
+        roleViewModel.dispose();
+        await roleRepository.dispose();
+      });
+
+      expect(roleViewModel.isRoleLoading, isTrue);
+      expect(roleViewModel.isAdmin, isFalse);
+
+      roleRepository.pendingRole!.complete(UserRole.administrador);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(roleViewModel.isAdmin, isTrue);
+      expect(roleViewModel.isRoleLoading, isFalse);
+    });
+
+    test('actualiza el rol después de iniciar sesión', () async {
+      repository.role = UserRole.administrador;
+
+      final bool result = await viewModel.signIn(
+        email: 'admin@ejemplo.com',
+        password: 'Clave123!',
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(result, isTrue);
+      expect(viewModel.currentUser?.role, UserRole.administrador);
+      expect(viewModel.isAdmin, isTrue);
+      expect(viewModel.isRoleLoading, isFalse);
+    });
+
+    test('descarta el rol al cerrar sesión', () async {
+      repository.role = UserRole.administrador;
+      await viewModel.signIn(email: 'admin@ejemplo.com', password: 'Clave123!');
+      await Future<void>.delayed(Duration.zero);
+      expect(viewModel.isAdmin, isTrue);
+
+      await viewModel.signOut();
+
+      expect(viewModel.isAdmin, isFalse);
+      expect(viewModel.currentUser, isNull);
+      expect(viewModel.isRoleLoading, isFalse);
+    });
   });
 }
