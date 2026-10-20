@@ -18,6 +18,19 @@ abstract interface class AuthRepository {
   /// no puede ingresar.
   Future<AppUser> signIn({required String email, required String password});
 
+  /// Crea una cuenta de vecino con rol `vecino`.
+  ///
+  /// [phone] es opcional. Lanza [AuthFailure] cuando el correo ya está en uso,
+  /// la contraseña no es válida o el perfil no se puede guardar.
+  Future<AppUser> signUp({
+    required String nombres,
+    required String apellidos,
+    required String cedula,
+    required String email,
+    String? phone,
+    required String password,
+  });
+
   /// Cierra la sesión actual.
   Future<void> signOut();
 }

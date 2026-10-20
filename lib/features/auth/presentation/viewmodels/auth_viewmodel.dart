@@ -80,6 +80,58 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  /// Crea una cuenta de vecino y deja la sesión abierta.
+  ///
+  /// Devuelve `true` si la cuenta se creó y el perfil se guardó.
+  Future<bool> signUp({
+    required String nombres,
+    required String apellidos,
+    required String cedula,
+    required String email,
+    String? phone,
+    required String password,
+  }) async {
+    if (_isLoading) {
+      return false;
+    }
+
+    if (nombres.trim().isEmpty ||
+        apellidos.trim().isEmpty ||
+        cedula.trim().isEmpty ||
+        email.trim().isEmpty ||
+        password.isEmpty) {
+      _errorMessage = AppStrings.authMissingRegistrationData;
+      _notify();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    _notify();
+
+    try {
+      final AppUser user = await repository.signUp(
+        nombres: nombres,
+        apellidos: apellidos,
+        cedula: cedula,
+        email: email,
+        phone: phone,
+        password: password,
+      );
+      _applyUser(user);
+      return true;
+    } on AuthFailure catch (failure) {
+      _errorMessage = _messageFor(failure.reason);
+      return false;
+    } catch (_) {
+      _errorMessage = AppStrings.authUnexpectedSignUp;
+      return false;
+    } finally {
+      _isLoading = false;
+      _notify();
+    }
+  }
+
   /// Cierra la sesión actual.
   Future<void> signOut() async {
     if (_isLoading) {
@@ -131,6 +183,10 @@ class AuthViewModel extends ChangeNotifier {
       AuthFailureReason.tooManyRequests => AppStrings.authTooManyRequests,
       AuthFailureReason.network => AppStrings.authNetwork,
       AuthFailureReason.notAllowed => AppStrings.authNotAllowed,
+      AuthFailureReason.emailAlreadyInUse => AppStrings.authEmailAlreadyInUse,
+      AuthFailureReason.weakPassword => AppStrings.authWeakPassword,
+      AuthFailureReason.profileCreationFailed =>
+        AppStrings.authProfileCreationFailed,
       AuthFailureReason.unknown => AppStrings.authUnexpected,
     };
   }

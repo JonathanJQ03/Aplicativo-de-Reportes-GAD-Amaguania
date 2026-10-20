@@ -6,6 +6,9 @@ enum AuthFailureReason {
   tooManyRequests,
   network,
   notAllowed,
+  emailAlreadyInUse,
+  weakPassword,
+  profileCreationFailed,
   unknown,
 }
 

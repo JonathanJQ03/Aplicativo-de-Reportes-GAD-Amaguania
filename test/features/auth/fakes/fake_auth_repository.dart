@@ -4,6 +4,16 @@ import 'package:amaguana_alerta/features/auth/domain/auth_failure.dart';
 import 'package:amaguana_alerta/features/auth/domain/auth_repository.dart';
 import 'package:amaguana_alerta/models/app_user.dart';
 
+/// Datos de un registro que el doble en memoria recuerda para las pruebas.
+typedef SignUpRequest = ({
+  String nombres,
+  String apellidos,
+  String cedula,
+  String email,
+  String? phone,
+  String password,
+});
+
 /// Doble en memoria de [AuthRepository] para pruebas.
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({AppUser? initialUser}) : _currentUser = initialUser;
@@ -13,9 +23,13 @@ class FakeAuthRepository implements AuthRepository {
       StreamController<AppUser?>.broadcast();
 
   AuthFailure? failure;
+  AuthFailure? signUpFailure;
   Completer<AppUser>? pendingSignIn;
+  Completer<AppUser>? pendingSignUp;
   int signInCalls = 0;
+  int signUpCalls = 0;
   int signOutCalls = 0;
+  SignUpRequest? lastSignUp;
 
   @override
   AppUser? get currentUser => _currentUser;
@@ -47,6 +61,42 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser> signUp({
+    required String nombres,
+    required String apellidos,
+    required String cedula,
+    required String email,
+    String? phone,
+    required String password,
+  }) async {
+    signUpCalls++;
+    lastSignUp = (
+      nombres: nombres,
+      apellidos: apellidos,
+      cedula: cedula,
+      email: email,
+      phone: phone,
+      password: password,
+    );
+    if (signUpFailure != null) {
+      throw signUpFailure!;
+    }
+    if (pendingSignUp != null) {
+      final AppUser user = await pendingSignUp!.future;
+      _save(user);
+      return user;
+    }
+    final AppUser user = AppUser(
+      uid: 'uid-1',
+      email: email.trim(),
+      role: UserRole.vecino,
+      displayName: '$nombres $apellidos'.trim(),
+    );
+    _save(user);
+    return user;
+  }
+
+  @override
   Future<void> signOut() async {
     signOutCalls++;
     _currentUser = null;
@@ -59,6 +109,10 @@ class FakeAuthRepository implements AuthRepository {
 
   void completeSignIn(AppUser user) {
     pendingSignIn?.complete(user);
+  }
+
+  void completeSignUp(AppUser user) {
+    pendingSignUp?.complete(user);
   }
 
   void _save(AppUser? user) {

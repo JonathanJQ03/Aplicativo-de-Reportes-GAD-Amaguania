@@ -116,6 +116,100 @@ void main() {
       },
     );
 
+    test('registra un vecino y abre la sesión', () async {
+      final bool result = await viewModel.signUp(
+        nombres: 'María Fernanda',
+        apellidos: 'Pérez Gómez',
+        cedula: '1712345678',
+        email: 'vecino@ejemplo.com',
+        phone: '0991234567',
+        password: 'Vecino123!',
+      );
+
+      expect(result, isTrue);
+      expect(repository.signUpCalls, 1);
+      expect(repository.lastSignUp?.nombres, 'María Fernanda');
+      expect(repository.lastSignUp?.apellidos, 'Pérez Gómez');
+      expect(repository.lastSignUp?.cedula, '1712345678');
+      expect(repository.lastSignUp?.email, 'vecino@ejemplo.com');
+      expect(repository.lastSignUp?.phone, '0991234567');
+      expect(viewModel.isAuthenticated, isTrue);
+      expect(viewModel.currentUser?.role, UserRole.vecino);
+      expect(viewModel.currentUser?.displayName, 'María Fernanda Pérez Gómez');
+      expect(viewModel.errorMessage, isNull);
+      expect(viewModel.isLoading, isFalse);
+    });
+
+    test('no registra si faltan datos obligatorios', () async {
+      final bool result = await viewModel.signUp(
+        nombres: '',
+        apellidos: 'Pérez',
+        cedula: '1712345678',
+        email: 'vecino@ejemplo.com',
+        password: 'Vecino123!',
+      );
+
+      expect(result, isFalse);
+      expect(repository.signUpCalls, 0);
+      expect(viewModel.errorMessage, AppStrings.authMissingRegistrationData);
+    });
+
+    test('traduce el correo ya registrado durante el registro', () async {
+      repository.signUpFailure = const AuthFailure(
+        AuthFailureReason.emailAlreadyInUse,
+      );
+
+      final bool result = await viewModel.signUp(
+        nombres: 'María',
+        apellidos: 'Pérez',
+        cedula: '1712345678',
+        email: 'vecino@ejemplo.com',
+        password: 'Vecino123!',
+      );
+
+      expect(result, isFalse);
+      expect(viewModel.isAuthenticated, isFalse);
+      expect(viewModel.errorMessage, AppStrings.authEmailAlreadyInUse);
+      expect(viewModel.isLoading, isFalse);
+    });
+
+    test('traduce el fallo al guardar el perfil', () async {
+      repository.signUpFailure = const AuthFailure(
+        AuthFailureReason.profileCreationFailed,
+      );
+
+      final bool result = await viewModel.signUp(
+        nombres: 'María',
+        apellidos: 'Pérez',
+        cedula: '1712345678',
+        email: 'vecino@ejemplo.com',
+        password: 'Vecino123!',
+      );
+
+      expect(result, isFalse);
+      expect(viewModel.errorMessage, AppStrings.authProfileCreationFailed);
+    });
+
+    test('mantiene el estado de carga durante el registro', () async {
+      repository.pendingSignUp = Completer<AppUser>();
+
+      final Future<bool> pending = viewModel.signUp(
+        nombres: 'María',
+        apellidos: 'Pérez',
+        cedula: '1712345678',
+        email: 'vecino@ejemplo.com',
+        password: 'Vecino123!',
+      );
+
+      expect(viewModel.isLoading, isTrue);
+      expect(viewModel.errorMessage, isNull);
+
+      repository.completeSignUp(_user);
+
+      expect(await pending, isTrue);
+      expect(viewModel.isLoading, isFalse);
+    });
+
     test('cierra la sesión correctamente', () async {
       final FakeAuthRepository signedInRepository = FakeAuthRepository(
         initialUser: _user,

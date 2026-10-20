@@ -40,6 +40,17 @@ void main() {
       );
     });
 
+    test('traduce correo ya registrado y contraseña débil', () {
+      expect(
+        authFailureReasonForCode('email-already-in-use'),
+        AuthFailureReason.emailAlreadyInUse,
+      );
+      expect(
+        authFailureReasonForCode('weak-password'),
+        AuthFailureReason.weakPassword,
+      );
+    });
+
     test('usa desconocido para códigos no contemplados', () {
       expect(
         authFailureReasonForCode('internal-error'),
