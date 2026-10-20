@@ -17,8 +17,12 @@ import '../../features/reports/views/report_detail_view.dart';
 /// La restricción por roles se agrega en S07. Mientras el correo no esté
 /// confirmado, el usuario solo puede ver la pantalla de verificación.
 GoRouter createAppRouter(AuthViewModel authViewModel) {
-  // Rutas accesibles sin sesión. S06 agregará '/forgot-password'.
-  const Set<String> publicRoutes = <String>{'/login', '/register'};
+  // Rutas accesibles sin sesión.
+  const Set<String> publicRoutes = <String>{
+    '/login',
+    '/register',
+    '/forgot-password',
+  };
   const String verifyEmailRoute = '/verify-email';
 
   return GoRouter(

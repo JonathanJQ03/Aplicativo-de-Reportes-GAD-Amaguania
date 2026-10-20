@@ -54,6 +54,31 @@ void main() {
     expect(find.text(AppStrings.loginGreeting), findsOneWidget);
   });
 
+  testWidgets('abre la recuperación de contraseña y vuelve al login', (
+    tester,
+  ) async {
+    final FakeAuthRepository repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(VeciApp(authRepository: repository));
+    await tester.pumpAndSettle();
+
+    final Finder forgotLink = find.text(AppStrings.loginForgotPassword);
+    await tester.ensureVisible(forgotLink);
+    await tester.tap(forgotLink);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.forgotPasswordHeading), findsOneWidget);
+    expect(find.text(AppStrings.loginGreeting), findsNothing);
+
+    final Finder backLink = find.text(AppStrings.forgotPasswordBack);
+    await tester.ensureVisible(backLink);
+    await tester.tap(backLink);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.loginGreeting), findsOneWidget);
+  });
+
   testWidgets('inicia sesión y muestra la pantalla principal', (tester) async {
     final FakeAuthRepository repository = FakeAuthRepository();
     addTearDown(repository.dispose);
@@ -63,6 +88,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).at(0), 'vecino@ejemplo.com');
     await tester.enterText(find.byType(TextField).at(1), 'Clave123!');
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pumpAndSettle();
 
