@@ -3,6 +3,8 @@
 **Sesión actual:** S03 — Registro (completada)
 **Última actualización:** 2026-10-19
 
+> Contexto detallado para retomar el trabajo: [`docs/contexto-sesion.md`](docs/contexto-sesion.md).
+
 ## Completadas
 
 - S00 — Preparación ✅ (RNF-08): base normalizada con tokens de `DESIGN.md`,

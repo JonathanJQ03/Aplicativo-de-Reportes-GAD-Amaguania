@@ -14,8 +14,10 @@ Dart (toda vive fuera de `lib/`, para que no se incluya en el build).
 
 ## Guías
 
-- [`firebase-emulator.md`](firebase-emulator.md): cómo levantar Firebase
-  Authentication en local y crear el usuario de prueba.
+- [`contexto-sesion.md`](contexto-sesion.md): resumen del estado del proyecto y
+  checklist para retomar la próxima sesión.
+- [`firebase-emulator.md`](firebase-emulator.md): cómo levantar los emuladores
+  locales de Authentication y Firestore, y crear el usuario de prueba.
 
 > Nota: los assets que **sí** se usan en la app (imágenes embebidas en el
 > binario) van en `assets/` dentro de la raíz del proyecto Flutter y se declaran
