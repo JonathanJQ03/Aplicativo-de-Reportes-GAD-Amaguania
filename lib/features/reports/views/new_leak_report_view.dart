@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/app_strings.dart';
+
 /// Pantalla de nuevo reporte de fuga de agua.
 ///
 /// TODO: formulario con descripción, fotos (image_picker), ubicación
@@ -12,7 +14,7 @@ class NewLeakReportView extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'Nuevo reporte de fuga',
+          AppStrings.newLeakReportTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),

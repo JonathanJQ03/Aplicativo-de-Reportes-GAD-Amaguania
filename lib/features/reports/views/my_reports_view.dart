@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/app_strings.dart';
+
 /// Pantalla con los reportes creados por el vecino autenticado.
 ///
 /// TODO: listar los reportes del usuario con su estado usando
@@ -12,7 +14,7 @@ class MyReportsView extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'Mis reportes',
+          AppStrings.myReportsTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),

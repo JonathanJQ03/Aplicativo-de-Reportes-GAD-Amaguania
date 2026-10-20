@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/app_strings.dart';
+
 /// Pantalla de perfil del vecino.
 ///
 /// TODO: mostrar y editar nombre, cédula, teléfono y foto; mostrar el rol
@@ -12,7 +14,7 @@ class ProfileView extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'Mi perfil',
+          AppStrings.profileTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),

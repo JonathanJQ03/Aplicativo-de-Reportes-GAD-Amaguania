@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../models/app_user.dart';
-import '../../../repositories/auth_repository.dart';
+import '../../auth/domain/auth_repository.dart';
 
 /// ViewModel del perfil: datos del usuario y cierre de sesión.
 ///

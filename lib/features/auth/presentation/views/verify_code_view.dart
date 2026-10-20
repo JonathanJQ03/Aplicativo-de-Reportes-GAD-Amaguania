@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_strings.dart';
+
 /// Pantalla de verificación por código (SMS o correo).
 ///
-/// TODO: campo de código de 6 dígitos que llama a
-/// `AuthViewModel.confirmVerificationCode()`.
+/// TODO(S05): campo de código de 6 dígitos para confirmar la cuenta.
 class VerifyCodeView extends StatelessWidget {
   const VerifyCodeView({super.key});
 
@@ -12,7 +13,7 @@ class VerifyCodeView extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'Verificar código',
+          AppStrings.verifyCodeTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_strings.dart';
+
 /// Pantalla de recuperación de contraseña.
 ///
-/// TODO: campo de correo que llama a `AuthViewModel.sendPasswordReset()`.
+/// TODO(S06): campo de correo para enviar el enlace de recuperación.
 class ForgotPasswordView extends StatelessWidget {
   const ForgotPasswordView({super.key});
 
@@ -11,7 +13,7 @@ class ForgotPasswordView extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'Recuperar contraseña',
+          AppStrings.forgotPasswordTitle,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
       ),

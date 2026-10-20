@@ -1,165 +1,131 @@
-# Amaguaña Alerta
+# VeciApp
 
-Aplicación móvil de **reportes ciudadanos** para el Gobierno Autónomo Descentralizado (GAD) de Amaguaña.
+Aplicación móvil de **reportes ciudadanos** para el Gobierno Autónomo
+Descentralizado (GAD) de Amaguaña.
 
-Permite a los vecinos reportar dos tipos de incidencias:
-
-- 💧 **Fugas de agua** en la red de acueducto o en vía pública.
-- 🐕 **Mascotas extraviadas o abandonadas.**
-
-Los reportes pasan por un proceso de revisión por parte del GAD antes de ser publicados en el mapa para toda la comunidad.
+Los vecinos reportan **fugas de agua** y **mascotas extraviadas o abandonadas**
+con descripción, fotos y ubicación. Todo reporte nace como pendiente y solo se
+publica después de la aprobación de un administrador del GAD.
 
 ---
 
 ## Estado del proyecto
 
-🚧 **Fase: estructura base.** Solo existe la estructura de carpetas y los stubs (clases vacías con `// TODO:`). **No hay lógica de negocio implementada todavía.**
+🚧 **Sesión actual: S02 — Validación de campos.**
 
-> ⚠️ **Firebase y Google Maps aún NO están configurados.** Las dependencias están agregadas en `pubspec.yaml`, pero falta:
-> - `flutterfire configure` (genera los archivos de configuración de Firebase).
-> - La API key de Google Maps en los ficheros de Android (`AndroidManifest.xml`) e iOS (`AppDelegate.swift` / `Info.plist`).
-> - Los permisos de ubicación y cámara en ambos sistemas.
->
-> Esto se hará en una segunda fase, sobre esta misma estructura.
+Completado:
+
+- **S00:** base del proyecto, tokens de `DESIGN.md`, tipografía, textos
+  centralizados, widgets compartidos y localización en español.
+- **S01:** login con Firebase Authentication, sesión persistente y cierre de
+  sesión.
+
+Consulta `PROGRESS.md` para el detalle y `AGENTS.md` para la hoja de ruta.
+
+---
+
+## Stack
+
+- **Flutter / Dart** para la app móvil y el futuro panel web.
+- **Firebase:** Authentication, Cloud Firestore, Storage y Cloud Messaging.
+- **Google Maps Platform** para mapas y ubicación.
+- **Provider** para el estado (decisión registrada en `PROGRESS.md`).
+- **go_router** para la navegación y la guarda de sesión.
 
 ---
 
 ## Arquitectura
 
-**MVVM simple organizado por funcionalidades** (features-first).
+La feature `auth` sigue Clean Architecture por capas:
 
 ```
-Vista  →  ViewModel  →  Repositorio  →  Firebase
+presentation  →  domain  ←  data
+   vistas          contrato    Firebase Auth
+   viewmodels      errores
 ```
 
-| Capa | Responsabilidad |
-|---|---|
-| **View** (`features/*/views/`) | Dibuja la interfaz y recoge la interacción del usuario. **Nunca** accede a Firebase. |
-| **ViewModel** (`features/*/viewmodels/`) | Contiene el estado de la pantalla y la orquestación. Notifica cambios a la vista mediante `ChangeNotifier` (Provider). |
-| **Repository** (`repositories/`) | Única capa que habla con Firebase (Auth, Firestore, Storage). Expone métodos y streams. |
-| **Model** (`models/`) | Entidades de datos y enums compartidos. |
-| **Core** (`core/`) | Tema, constantes, utilidades y rutas. Sin dependencias de funcionalidades. |
-
-La regla es estricta: **una vista solo conversa con su ViewModel, y un ViewModel solo conversa con repositorios.** Ninguna vista importa un paquete de Firebase.
-
-### Stack
-
-- **Estado:** `provider`
-- **Navegación:** `go_router`
-- **Backend:** Firebase (`firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage`, `firebase_messaging`)
-- **Mapa y ubicación:** `google_maps_flutter`, `geolocator`
-- **Imágenes:** `image_picker`, `flutter_image_compress`
-
----
-
-## Estructura de carpetas
+Las demás features se migrarán a esta estructura cuando se trabajen en su
+sesión. La regla se mantiene: **las vistas no conocen Firebase**; pasan por un
+ViewModel y un repositorio.
 
 ```
-.
-├── lib/
-│   ├── main.dart                          # Punto de entrada
-│   ├── app.dart                           # MaterialApp, tema y rutas
-│   ├── core/
-│   │   ├── constants/
-│   │   │   └── app_constants.dart         # Constantes globales
-│   │   ├── router/
-│   │   │   └── app_router.dart            # Rutas con go_router
-│   │   ├── theme/
-│   │   │   └── app_theme.dart             # Tema Material 3 + paleta
-│   │   └── utils/
-│   │       ├── cedula_validator.dart      # Validación módulo 10 (cédula EC)
-│   │       └── image_compressor.dart      # Compresión de fotos a máx. 1 MB
-│   ├── models/
-│   │   ├── app_user.dart                  # Usuario y roles
-│   │   ├── report.dart                    # Reporte base
-│   │   ├── report_status.dart             # Enum de estados
-│   │   └── report_type.dart               # Enum fuga / mascota
-│   ├── repositories/
-│   │   ├── auth_repository.dart           # Firebase Auth
-│   │   ├── report_repository.dart         # Cloud Firestore
-│   │   └── storage_repository.dart        # Firebase Storage
-│   └── features/
-│       ├── auth/
-│       │   ├── viewmodels/auth_viewmodel.dart
-│       │   └── views/
-│       │       ├── forgot_password_view.dart
-│       │       ├── login_view.dart
-│       │       ├── register_view.dart
-│       │       └── verify_code_view.dart
-│       ├── home/
-│       │   ├── viewmodels/home_viewmodel.dart
-│       │   └── views/home_view.dart       # Mapa + lista + filtros
-│       ├── profile/
-│       │   ├── viewmodels/profile_viewmodel.dart
-│       │   └── views/profile_view.dart
-│       └── reports/
-│           ├── viewmodels/report_viewmodel.dart
-│           └── views/
-│               ├── my_reports_view.dart
-│               ├── new_leak_report_view.dart
-│               ├── new_pet_report_view.dart
-│               └── report_detail_view.dart
-├── docs/                                  # Documentación del proyecto
-│   ├── README.md                          # Índice de la documentación
-│   ├── srs/                               # Documento de requisitos
-│   ├── wireframes/
-│   ├── diagrams/
-│   └── assets/
-├── test/
-│   └── widget_test.dart
-└── android/ · ios/                        # Plataformas generadas
+lib/
+├── main.dart                  # entrada por defecto (delega en main_vecino)
+├── main_vecino.dart           # entrada de la app móvil
+├── main_admin.dart            # marcador del panel web (S15)
+├── app.dart                   # MaterialApp, Provider y router
+├── core/
+│   ├── config/                # inicialización de Firebase
+│   ├── errors/                # pantalla de arranque con error
+│   ├── l10n/                  # textos visibles en español
+│   ├── router/                # rutas y guarda de sesión
+│   └── theme/                 # tokens de DESIGN.md
+├── shared/widgets/            # AppButton, AppTextField, AppBanner
+├── features/
+│   ├── auth/
+│   │   ├── data/              # FirebaseAuthRepository
+│   │   ├── domain/            # AuthRepository y AuthFailure
+│   │   └── presentation/      # LoginView y AuthViewModel
+│   ├── home/
+│   └── profile/
+└── models/                    # AppUser, Report, estados y tipos
 ```
 
 ---
 
-## Tema (Material 3)
+## Diseño
 
-| Uso | Color |
-|---|---|
-| Primario / botones principales | Amarillo pastel `#F6CF4A` |
-| Secundario / fondos suaves | Celeste pastel `#D9EEFA` |
-| Bordes y campos | Celeste `#7FB6D9` |
-| Fondo | Blanco `#FFFFFF` |
-| Texto | Oscuro `#1F2A37` |
-
-**Colores de estado de un reporte:**
-
-| Estado | Color |
-|---|---|
-| Pendiente | Amarillo |
-| Aprobado | Verde suave |
-| En atención | Celeste |
-| Resuelto | Gris azulado |
-| Rechazado | Rojo suave |
-
-Accesibilidad: esquinas redondeadas de **8 px**, tamaño táctil mínimo de **44 px** y contraste alto (texto oscuro sobre amarillo, no blanco).
+Todos los colores, tipografías, espaciados, radios y sombras viven en
+`lib/core/theme/` y provienen de `DESIGN.md`. No se escriben valores literales
+en los widgets. Los textos visibles están en `lib/core/l10n/app_strings.dart`.
 
 ---
 
 ## Puesta en marcha
 
-Requisitos: [Flutter SDK](https://docs.flutter.dev/get-started/install) estable.
+Requisitos: Flutter estable y Node.js (para el emulador de Firebase).
 
 ```bash
 flutter pub get
+npx firebase-tools emulators:start --only auth
+```
+
+En otra terminal:
+
+```bash
 flutter run
 ```
+
+En `debug` la app usa un proyecto demo y el emulador de Authentication. El
+usuario de prueba y la configuración de un proyecto real están en
+[`docs/firebase-emulator.md`](docs/firebase-emulator.md).
 
 Verificación:
 
 ```bash
+dart format .
 flutter analyze
 flutter test
 ```
 
 ---
 
-## Documentación
+## Seguridad
 
-La documentación del proyecto (SRS, wireframes, diagramas) vive en [`docs/`](docs/README.md).
+- Sin sesión no se accede a rutas privadas.
+- No se versionan `google-services.json`, `GoogleService-Info.plist`,
+  `firebase_options.dart` ni archivos `.env`.
+- No se registran en logs correos, cédulas, teléfonos ni URLs privadas.
+- Los datos sensibles del usuario se separarán de los datos públicos en
+  Firestore (`users` y `users_private`).
 
 ---
 
-## Autoría
+## Documentación
+
+- [`AGENTS.md`](AGENTS.md): metodología, reglas y hoja de ruta por sesiones.
+- [`DESIGN.md`](DESIGN.md): sistema de diseño.
+- [`PROGRESS.md`](PROGRESS.md): estado actual.
+- [`docs/firebase-emulator.md`](docs/firebase-emulator.md): Firebase en local.
 
 Proyecto para el **GAD de Amaguaña**.

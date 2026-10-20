@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
+import 'main_vecino.dart' as vecino;
 
-import 'app.dart';
-
-void main() {
-  // TODO: inicializar Firebase (Firebase.initializeApp) antes de runApp.
-  // Se deja pendiente a propósito: Firebase se configura en una segunda fase.
-  runApp(const AmaguanaAlertaApp());
-}
+/// Punto de entrada por defecto de Flutter.
+///
+/// La app móvil también se puede ejecutar con `lib/main_vecino.dart`; el
+/// panel web tendrá su propio punto de entrada en S15.
+Future<void> main() => vecino.main();
