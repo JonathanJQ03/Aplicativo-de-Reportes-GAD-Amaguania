@@ -15,6 +15,13 @@ service cloud.firestore {
     match /users_private/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow create: if request.auth != null && request.auth.uid == uid;
+      // S05 permite cambiar únicamente el correo privado cuando el dueño ya
+      // verificó el nuevo correo en Firebase Auth. El resto de campos queda
+      // inmutable desde el cliente.
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email'])
+        && request.resource.data.email is string;
     }
   }
 }
