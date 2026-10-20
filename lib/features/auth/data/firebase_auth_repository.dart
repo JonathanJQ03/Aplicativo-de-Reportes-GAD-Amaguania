@@ -18,8 +18,15 @@ class FirebaseAuthRepository implements AuthRepository {
   }) : _auth = auth ?? FirebaseAuth.instance,
        _firestore = firestore ?? FirebaseFirestore.instance {
     if (useEmulator) {
-      _auth.useAuthEmulator(emulatorHost, 9099);
-      _firestore.useFirestoreEmulator(emulatorHost, 8080);
+      // En un teléfono físico los emuladores se alcanzan con `adb reverse`.
+      // Desactivamos el mapeo automático de localhost a 10.0.2.2, que solo
+      // funciona dentro del emulador de Android.
+      _auth.useAuthEmulator(emulatorHost, 9099, automaticHostMapping: false);
+      _firestore.useFirestoreEmulator(
+        emulatorHost,
+        8080,
+        automaticHostMapping: false,
+      );
     }
   }
 

@@ -11,6 +11,12 @@ Future<void> main() async {
 
   try {
     final FirebaseSetup setup = await FirebaseBootstrap.initialize();
+    if (kDebugMode) {
+      debugPrint(
+        'Firebase local: host=${setup.authEmulatorHost}, '
+        'emulador=${setup.useAuthEmulator}',
+      );
+    }
     runApp(
       VeciApp(
         authRepository: FirebaseAuthRepository(
