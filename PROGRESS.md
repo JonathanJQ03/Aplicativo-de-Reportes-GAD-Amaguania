@@ -60,11 +60,17 @@
     consulta se usa `vecino`, nunca un rol con más permisos;
   - el cliente no puede crear ni cambiar su rol: las reglas solo aceptan
     `role == "vecino"` al crear el perfil y bloquean cualquier cambio de `role`;
-  - panel de administración con login propio, pantalla de comprobación, acceso
-    restringido para vecinos y marcador **Panel en preparación** para
-    administradores;
-  - guard de rutas probado para sesión ausente, rol cargando, vecino, vecino
-    verificado y administrador;
+  - **una sola app**: el login muestra la acción **Administrador** arriba a la
+    derecha y abre `/admin/login`; al autenticarse, el router lleva al panel si
+    el rol es `administrador` y al inicio si es `vecino`;
+  - login del GAD reutiliza `LoginView` en modo administrador, con **Volver** y
+    recuperación que regresa al mismo login;
+  - pantalla de comprobación, acceso restringido con **Volver a la app** y
+    marcador **Panel en preparación**;
+  - guard único en `resolveAppRedirect` probado para sesión ausente, rol
+    cargando, vecino, vecino verificado y administrador;
+  - `lib/main_admin.dart` queda como alias de `main_vecino.dart`; ya no existe
+    un segundo `AdminApp` ni un segundo APK;
   - reglas de Firestore por rol para `users` y `users_private`;
   - reglas base de Storage: solo el dueño escribe imágenes de hasta 2 MB en su
     carpeta `users/{uid}/profile/`; el resto queda denegado;
@@ -72,8 +78,9 @@
 
 ## En curso
 
-Ninguna. S07 queda cerrada. **La verificación real del correo (S05) sigue
-pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
+Ninguna. S07 y el ajuste de **app única** quedan cerrados. **La verificación
+real del correo (S05) sigue pendiente** y no se inicia S08 hasta que el usuario
+escriba “continuar”.
 
 ## Pendientes
 
@@ -82,7 +89,7 @@ pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
 - **Detección de cédulas duplicadas** (parte pendiente de RF-02). No se puede
   consultar `users_private` de otros vecinos con las reglas actuales; hay que
   definir el mecanismo antes de implementarla.
-- S07 … S28 (ver `AGENTS.md` para el alcance de cada sesión).
+- S08 … S28 (ver `AGENTS.md` para el alcance de cada sesión).
 
 ## Decisiones tomadas
 
@@ -99,8 +106,9 @@ pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
 - (2026-10-19) El nombre visible es **VeciApp**, según `AGENTS.md` y
   `DESIGN.md`. Queda pendiente confirmar la decisión abierta n.º 1 del SRS.
 - (2026-10-19) El punto de entrada móvil es `lib/main_vecino.dart`;
-  `lib/main.dart` delega en él. `lib/main_admin.dart` sigue como marcador del
-  panel web para S15.
+  `lib/main.dart` delega en él. Desde el ajuste de S07, `lib/main_admin.dart`
+  es un alias de la misma app; el panel se abre con la acción
+  **Administrador** del login.
 - (2026-10-19) Los validadores compartidos viven en
   `lib/shared/validators/validators.dart` y los mensajes visibles en
   `AppStrings`.
@@ -172,6 +180,16 @@ pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
   sesiones.
 - (2026-10-20) La rama `feature/s07-roles-acceso` se integró en `main` con un
   merge. S08 parte de `main`.
+- (2026-10-20) **VeciApp queda como una sola app y un solo APK.** El acceso de
+  administrador está en la esquina superior derecha del login normal y abre
+  `/admin/login`; al iniciar sesión, el rol decide si el destino es el panel o
+  el inicio de vecinos. `lib/main_admin.dart` es un alias de
+  `lib/main_vecino.dart`; se eliminaron `AdminApp` y `admin_router.dart`.
+- (2026-10-20) El guard único vive en `resolveAppRedirect`. Un administrador
+  puede entrar al panel sin correo verificado (las cuentas las provisiona el
+  GAD); un vecino que intenta el acceso de administración termina en
+  `/admin/denied` y puede volver a la app. Las reglas de Firestore siguen siendo
+  el límite de seguridad.
 
 ## Deuda y TODO
 
@@ -224,13 +242,17 @@ pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
     `s06-04-recuperacion.png`, `s06-05-enlace-enviado.png`,
     `s06-06-sesion-recuperada.png` y `s06-07-correo-no-registrado.png`.
 - **Verificación de S07:** `dart format .` aplicado, `flutter analyze` sin
-  problemas, **135 pruebas pasan** (`flutter test`). APK debug compilado para
-  `main_vecino.dart` y `main_admin.dart` e instalado en un Samsung SM-A546E
-  contra los emuladores locales.
-  - En el panel, una cuenta `vecino` quedó en **Acceso restringido** y una
-    cuenta `administrador` llegó a **Panel en preparación**.
-  - En la app móvil, el login de un vecino siguió funcionando con el rol
-    cargado desde Firestore.
+  problemas, **139 pruebas pasan** (`flutter test`). **Un solo APK debug**
+  compilado desde `main_vecino.dart` e instalado en un Samsung SM-A546E contra
+  los emuladores locales.
+  - El login normal con `administrador` llegó a **Panel en preparación**; el
+    login normal con `vecino` llegó a **Inicio**.
+  - La acción **Administrador** abrió el login del GAD y **Volver** regresó al
+    login normal.
+  - Un `vecino` que entró por el acceso de administrador quedó en **Acceso
+    restringido**; **Volver a la app** lo llevó a **Inicio**.
+  - La recuperación desde el login del GAD regresó al login del GAD.
+  - `main_admin.dart` arranca la misma app; no se generó un segundo APK.
   - Reglas de Firestore verificadas con 13 llamadas al emulador: sin sesión
     `403`, vecino leyendo a otro `403`, cambio de rol `403`, administrador
     leyendo perfiles `200`, creación con rol `administrador` `403` y creación
@@ -239,13 +261,15 @@ pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
     subida a otra carpeta `403`, archivo que no es imagen `403`, imagen de 3 MB
     `403` y borrado propio `204`.
   - Capturas en `/home/javier/Descargas/VeciApp/`: `s07-01-login-admin.png`,
-    `s07-02-vecino-acceso-restringido.png`, `s07-03-admin-panel.png` y
-    `s07-04-movil-vecino.png`.
+    `s07-02-vecino-acceso-restringido.png`, `s07-03-admin-panel.png`,
+    `s07-04-movil-vecino.png`, `s07-05-login-acceso-admin.png`,
+    `s07-06-login-admin.png`, `s07-07-acceso-restringido.png`,
+    `s07-08-panel-admin-integrado.png` y `s07-09-inicio-vecino.png`.
   - Para el teléfono físico, el APK se compila con
     `--dart-define=FIREBASE_EMULATOR_HOST=localhost`; sin ese valor Android
     intenta `10.0.2.2` y muestra el error de conexión.
-  - La plataforma `web/` todavía no existe; el panel se probó en Android y la
-    entrada web se agrega en S15.
+  - La plataforma `web/` todavía no existe; el panel se probó dentro de la app
+    Android y la entrada web se agrega en S15.
 - **No se probó entrega real de correo** porque no hay proyecto real
   configurado; la recuperación se verificó capturando el enlace del emulador.
 - `android/gradle.properties` tiene un ajuste local (heap de 2 GB, sin daemon
