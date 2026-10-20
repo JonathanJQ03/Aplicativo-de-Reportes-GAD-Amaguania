@@ -2,9 +2,10 @@
 
 S01 usa **Firebase Authentication** con correo y contraseña. S03 agrega el
 registro de vecinos y guarda el perfil en **Cloud Firestore**. S05 agrega la
-verificación del correo y el cambio de correo. Para no subir claves ni archivos
-de configuración al repositorio, el modo de desarrollo usa un proyecto demo y
-los emuladores locales.
+verificación del correo y el cambio de correo. S06 agrega el consentimiento
+LOPDP y la recuperación de contraseña por enlace. Para no subir claves ni
+archivos de configuración al repositorio, el modo de desarrollo usa un proyecto
+demo y los emuladores locales.
 
 ## Requisitos
 
@@ -85,6 +86,8 @@ Al crear una cuenta se escribe:
 
 - `users/{uid}`: nombre visible, rol `vecino` y fecha de creación.
 - `users_private/{uid}`: nombres, apellidos, cédula, correo y teléfono.
+- Desde S06, `users_private` también guarda `consentVersion` y
+  `consentAcceptedAt` (hora del servidor).
 
 El correo es obligatorio y el teléfono es opcional. La cédula se valida con el
 algoritmo ecuatoriano (S04). La detección de **cédulas duplicadas sigue
@@ -143,7 +146,47 @@ reenvía al correo nuevo. Al verificarse, la app intenta sincronizar el campo
 `email` de `users_private`; la regla de Firestore permite al dueño actualizar
 solo ese campo. La sincronización es best-effort y no bloquea el acceso.
 
-## 6. Usar un proyecto real de Firebase
+## 6. Consentimiento y recuperación de contraseña (S06)
+
+### Consentimiento LOPDP
+
+Al registrarse, la app muestra el aviso de privacidad y exige marcarlo antes de
+crear la cuenta. La regla de `firestore.rules` verifica que el perfil privado
+nuevo incluya:
+
+- `consentVersion`: versión del texto aceptado (hoy `"1.0"`);
+- `consentAcceptedAt`: timestamp del servidor.
+
+Las cuentas creadas antes de S06 no tienen estos campos y no se ven afectadas,
+porque la regla solo se aplica a la creación. El texto del aviso es una base
+técnica: debe revisarlo el GAD antes de producción.
+
+### Recuperación de contraseña
+
+En el login, “¿Olvidaste tu contraseña?” abre `/forgot-password`. La app valida
+el correo y pide a Firebase un enlace de restablecimiento. El mensaje de éxito
+es siempre el mismo, exista o no la cuenta, para no revelar correos registrados.
+
+Como el emulador no envía correos, el enlace queda en la lista de códigos:
+
+```bash
+curl -s http://127.0.0.1:9099/emulator/v1/projects/demo-veciapp/oobCodes
+```
+
+Busca la entrada con `"requestType": "PASSWORD_RESET"`. Puedes abrir su
+`oobLink` en el navegador o completar el cambio con la API del emulador:
+
+```bash
+curl -X POST \
+  'http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=demo-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{"oobCode":"<PASSWORD_RESET_CODE>","newPassword":"NuevaClave123!"}'
+```
+
+Después, la contraseña anterior debe fallar y la nueva debe permitir iniciar
+sesión. Esto se verificó en el Samsung SM-A546E de desarrollo.
+
+## 7. Usar un proyecto real de Firebase
 
 Pasa las claves por `--dart-define`, desactiva los emuladores y, si vas a probar
 la verificación real, desactiva el desbloqueo temporal:

@@ -1,6 +1,6 @@
 # PROGRESS
 
-**Sesión actual:** S05 — Verificación de correo (modo local temporal)
+**Sesión actual:** S06 — Consentimiento LOPDP y recuperación de contraseña
 **Última actualización:** 2026-10-20
 
 > Contexto detallado para retomar el trabajo: [`docs/contexto-sesion.md`](docs/contexto-sesion.md).
@@ -41,12 +41,25 @@
   - **pendiente para cerrar RF-03 de verdad**: conectar un proyecto real de
     Firebase, implementar el código de 6 dígitos elegido por el usuario y
     retirar la verificación automática.
+- S06 — Consentimiento LOPDP y recuperación ✅ (RF-06, RF-05):
+  - aviso de privacidad en español, versión 1.0, visible desde el registro;
+  - casilla de aceptación obligatoria, nunca premarcada; sin aceptación no se
+    crea la cuenta ni se escribe el perfil;
+  - `users_private` guarda `consentVersion` y `consentAcceptedAt` con hora del
+    servidor. La regla de Firestore exige ambos campos al crear un perfil;
+  - por decisión del usuario, el consentimiento se exige **solo a cuentas
+    nuevas**; las cuentas creadas antes de S06 siguen funcionando;
+  - recuperación de contraseña por **enlace de Firebase**: pantalla desde el
+    login, validación del correo, mensaje genérico, enlace enviado por Firebase
+    y contraseña anterior invalidada al completar el cambio;
+  - no se revela si un correo está registrado: una dirección inexistente
+    recibe el mismo mensaje de confirmación;
+  - pruebas unitarias y de widget para consentimiento, mensajes y recuperación.
 
 ## En curso
 
-Ninguna. S05 queda cerrada en su parte de interfaz y flujo local, pero **la
-verificación real del correo sigue pendiente**. No se inicia S06 hasta que el
-usuario lo indique.
+Ninguna. S06 queda cerrada. **La verificación real del correo (S05) sigue
+pendiente** y no se inicia S07 hasta que el usuario escriba “continuar”.
 
 ## Pendientes
 
@@ -55,7 +68,7 @@ usuario lo indique.
 - **Detección de cédulas duplicadas** (parte pendiente de RF-02). No se puede
   consultar `users_private` de otros vecinos con las reglas actuales; hay que
   definir el mecanismo antes de implementarla.
-- S06 … S28 (ver `AGENTS.md` para el alcance de cada sesión).
+- S07 … S28 (ver `AGENTS.md` para el alcance de cada sesión).
 
 ## Decisiones tomadas
 
@@ -115,6 +128,17 @@ usuario lo indique.
 - (2026-10-20) La rama `feature/s05-verificacion` se subió al remoto y S05 se
   integró en `main` con un merge. `main` es la base para S06; la verificación
   real sigue pendiente.
+- (2026-10-20) **S06 usa un aviso de privacidad base redactado para el
+  proyecto, versión 1.0.** Debe revisarlo el GAD antes de producción; si cambia
+  el texto, se sube `AppConstants.privacyNoticeVersion` y se define si se vuelve
+  a pedir la aceptación.
+- (2026-10-20) El consentimiento se guarda en `users_private` con
+  `consentVersion` y `consentAcceptedAt` (hora del servidor). Se exige solo a
+  cuentas nuevas, por decisión del usuario.
+- (2026-10-20) La recuperación de contraseña usa el **enlace de Firebase**, no
+  un código propio. El mensaje es genérico para no revelar si el correo existe;
+  al completar el cambio, la contraseña anterior deja de funcionar.
+- (2026-10-20) La rama de S06 es `feature/s06-consentimiento-recuperacion`.
 
 ## Deuda y TODO
 
@@ -129,33 +153,39 @@ usuario lo indique.
   está resuelta, pero el registro todavía permite una cédula repetida. Opciones:
   Cloud Function con Admin SDK o una colección de reserva con reglas que impidan
   duplicados sin exponer la cédula. No implementar por cuenta propia.
-- TODO(S06): consentimiento LOPDP y recuperación de contraseña.
-- TODO(S07): cargar el rol real desde Firestore, guards por rol, ampliar reglas
-  de Firestore y Storage e impedir que el cliente escriba un rol distinto de
-  `vecino`.
-- TODO(S08): reemplazar `HomeView` por la navegación principal definitiva.
-- TODO(S15): construir el panel de administración sobre `lib/main_admin.dart`.
+- **TODO(S06): revisión legal del aviso de privacidad.** El texto actual es una
+  base técnica; el GAD debe validarlo con su área jurídica antes de producción.
+  Si se modifica, actualizar la versión y decidir si se solicita una nueva
+  aceptación a las cuentas existentes.
+- **TODO(S07):** cargar el rol real desde Firestore, guards por rol, ampliar
+  reglas de Firestore y Storage e impedir que el cliente escriba un rol distinto
+  de `vecino`.
+- **TODO(S08):** reemplazar `HomeView` por la navegación principal definitiva.
+- **TODO(S15):** construir el panel de administración sobre `lib/main_admin.dart`.
 - La sincronización de `users_private.email` es best-effort: si falla la red o
   la escritura, no bloquea la verificación y se reintenta en una próxima recarga
   de la cuenta. Agregar una prueba de reglas de Firestore cuando exista
   infraestructura para ello.
 - `firestore.rules` cubre solo el perfil; todavía no existe `storage.rules`
   (llega con S07/S10).
-- Verificado en un dispositivo físico Samsung SM-A546E contra los emuladores
-  locales de Auth y Firestore:
-  - S03: registro y perfil separado en `users` / `users_private`; capturas
-    `s03-01-login.png` … `s03-06-registro-resultado.png`.
-  - S04: cédula inválida y válida; capturas `s04-01-cedula-invalida.png` y
-    `s04-02-cedula-valida.png`.
-  - S05: pantalla de verificación, cambio de correo pendiente y desbloqueo
-    automático de desarrollo; capturas `s05-01-verificacion.png`,
-    `s05-02-correo-pendiente.png`, `s05-03-verificado.png` y
-    `s05-04-modo-desarrollo.png`.
-- S05: `dart format .` aplicado, `flutter analyze` sin problemas, **102 pruebas
-  pasan** (`flutter test`), APK debug compilado e instalado. Se comprobó el
-  flujo de registro → verificación con enlace del emulador → inicio, el cambio
-  de correo y el desbloqueo automático a los 3 segundos. **No se probó entrega
-  real de correo** porque no hay proyecto real configurado.
+- **Verificación de S06:** `dart format .` aplicado, `flutter analyze` sin
+  problemas, **115 pruebas pasan** (`flutter test`), APK debug compilado e
+  instalado en un Samsung SM-A546E contra los emuladores locales.
+  - Se creó una cuenta nueva aceptando el aviso; `users_private` quedó con
+    `consentVersion: "1.0"` y `consentAcceptedAt` con timestamp del servidor.
+  - Se abrió el aviso desde el registro y se comprobó que la casilla no se marca
+    sin acción del usuario.
+  - Se solicitó recuperación y se completó con el `oobCode` del emulador: la
+    contraseña anterior respondió `INVALID_PASSWORD` y la nueva permitió iniciar
+    sesión.
+  - Un correo no registrado mostró el mismo mensaje genérico, sin revelar que no
+    existía.
+  - Capturas en `/home/javier/Descargas/VeciApp/`: `s06-01-login-recuperacion.png`,
+    `s06-02-aviso-privacidad.png`, `s06-03-consentimiento.png`,
+    `s06-04-recuperacion.png`, `s06-05-enlace-enviado.png`,
+    `s06-06-sesion-recuperada.png` y `s06-07-correo-no-registrado.png`.
+- **No se probó entrega real de correo** porque no hay proyecto real
+  configurado; la recuperación se verificó capturando el enlace del emulador.
 - `android/gradle.properties` tiene un ajuste local (heap de 2 GB, sin daemon
   ni incremental) para compilar en este equipo; no se incluyó en los commits.
 - El SRS está en `docs/srs/SRS_GAD_AMAGUANIA_APLICATIVO_MOVIL.pdf`.
