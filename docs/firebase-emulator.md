@@ -65,11 +65,18 @@ flutter run --dart-define=FIREBASE_EMULATOR_HOST=localhost
 ```
 
 Así el teléfono usa los emuladores de tu computadora sin depender de la red
-Wi-Fi. También puedes indicar la IP de la computadora:
+Wi-Fi. La app configura los emuladores con `automaticHostMapping: false` para
+que `localhost` llegue al equipo mediante `adb reverse` también en un teléfono
+físico. También puedes indicar la IP de la computadora:
 
 ```bash
 flutter run --dart-define=FIREBASE_EMULATOR_HOST=192.168.1.50
 ```
+
+Los builds de desarrollo permiten tráfico HTTP solo hacia `10.0.2.2`,
+`localhost` y `127.0.0.1` mediante
+`android/app/src/debug/res/xml/network_security_config.xml`. La build de
+producción no incluye esa configuración y sigue exigiendo HTTPS.
 
 ## 4. Registro de vecinos (S03)
 
