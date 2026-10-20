@@ -12,6 +12,7 @@ typedef SignUpRequest = ({
   String email,
   String? phone,
   String password,
+  bool consentAccepted,
 });
 
 /// Doble en memoria de [AuthRepository] para pruebas.
@@ -26,6 +27,7 @@ class FakeAuthRepository implements AuthRepository {
   AuthFailure? signUpFailure;
   AuthFailure? verificationFailure;
   AuthFailure? emailChangeFailure;
+  AuthFailure? passwordResetFailure;
   AppUser? reloadResult;
   Completer<AppUser>? pendingSignIn;
   Completer<AppUser>? pendingSignUp;
@@ -35,7 +37,9 @@ class FakeAuthRepository implements AuthRepository {
   int sendVerificationCalls = 0;
   int reloadCalls = 0;
   int requestEmailChangeCalls = 0;
+  int passwordResetCalls = 0;
   String? lastRequestedEmail;
+  String? lastPasswordResetEmail;
   SignUpRequest? lastSignUp;
 
   @override
@@ -76,6 +80,7 @@ class FakeAuthRepository implements AuthRepository {
     required String email,
     String? phone,
     required String password,
+    required bool consentAccepted,
   }) async {
     signUpCalls++;
     lastSignUp = (
@@ -85,6 +90,7 @@ class FakeAuthRepository implements AuthRepository {
       email: email,
       phone: phone,
       password: password,
+      consentAccepted: consentAccepted,
     );
     if (signUpFailure != null) {
       throw signUpFailure!;
@@ -136,6 +142,15 @@ class FakeAuthRepository implements AuthRepository {
     lastRequestedEmail = newEmail;
     if (emailChangeFailure != null) {
       throw emailChangeFailure!;
+    }
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    passwordResetCalls++;
+    lastPasswordResetEmail = email;
+    if (passwordResetFailure != null) {
+      throw passwordResetFailure!;
     }
   }
 

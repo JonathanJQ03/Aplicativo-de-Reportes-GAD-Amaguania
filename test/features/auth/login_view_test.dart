@@ -102,6 +102,7 @@ void main() {
     await pumpLogin(tester);
     await fillCredentials(tester);
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pumpAndSettle();
 
@@ -115,6 +116,7 @@ void main() {
   ) async {
     await pumpLogin(tester);
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pump();
 
@@ -134,6 +136,7 @@ void main() {
     await tester.enterText(find.byType(TextField).at(0), 'correo');
     await tester.enterText(find.byType(TextField).at(1), 'Clave123!');
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pump();
 
@@ -146,6 +149,7 @@ void main() {
     await pumpLogin(tester);
     await tester.enterText(find.byType(TextField).at(0), 'vecino@ejemplo.com');
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pump();
 
@@ -156,6 +160,7 @@ void main() {
 
   testWidgets('limpia el error de cada campo al corregirlo', (tester) async {
     await pumpLogin(tester);
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pump();
 
@@ -193,6 +198,7 @@ void main() {
     await pumpLogin(tester);
     await fillCredentials(tester);
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pumpAndSettle();
 
@@ -204,11 +210,13 @@ void main() {
     await pumpLogin(tester);
     await fillCredentials(tester);
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pump();
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
+    await tester.ensureVisible(find.byType(AppButton));
     await tester.tap(find.byType(AppButton));
     await tester.pump();
     expect(repository.signInCalls, 1);

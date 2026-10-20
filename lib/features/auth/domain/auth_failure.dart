@@ -11,6 +11,8 @@ enum AuthFailureReason {
   requiresRecentLogin,
   verificationEmailFailed,
   emailChangeFailed,
+  consentRequired,
+  passwordResetFailed,
   profileCreationFailed,
   unknown,
 }

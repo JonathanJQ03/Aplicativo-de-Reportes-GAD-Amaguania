@@ -20,8 +20,11 @@ abstract interface class AuthRepository {
 
   /// Crea una cuenta de vecino con rol `vecino`.
   ///
-  /// [phone] es opcional. Lanza [AuthFailure] cuando el correo ya está en uso,
-  /// la contraseña no es válida o el perfil no se puede guardar.
+  /// [phone] es opcional. [consentAccepted] debe ser `true`; sin la aceptación
+  /// expresa del aviso de privacidad no se crea la cuenta.
+  ///
+  /// Lanza [AuthFailure] cuando el correo ya está en uso, la contraseña no es
+  /// válida, falta el consentimiento o el perfil no se puede guardar.
   Future<AppUser> signUp({
     required String nombres,
     required String apellidos,
@@ -29,6 +32,7 @@ abstract interface class AuthRepository {
     required String email,
     String? phone,
     required String password,
+    required bool consentAccepted,
   });
 
   /// Cierra la sesión actual.
@@ -50,4 +54,10 @@ abstract interface class AuthRepository {
   /// Firebase envía un enlace al nuevo correo; el cambio se completa cuando el
   /// usuario lo verifica. Lanza [AuthFailure] si la operación no es posible.
   Future<void> requestEmailChange(String newEmail);
+
+  /// Envía al correo un enlace para restablecer la contraseña.
+  ///
+  /// La implementación no revela si el correo existe: una dirección no
+  /// registrada también termina sin error para evitar enumerar cuentas.
+  Future<void> sendPasswordResetEmail(String email);
 }

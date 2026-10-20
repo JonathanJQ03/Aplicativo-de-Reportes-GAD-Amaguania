@@ -218,7 +218,14 @@ class _LoginViewState extends State<LoginView> {
                       onChanged: _onPasswordChanged,
                       onSubmitted: (_) => _submit(),
                     ),
-                    const SizedBox(height: AppSpacing.sp5),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => context.go('/forgot-password'),
+                        child: const Text(AppStrings.loginForgotPassword),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sp4),
                     AppButton(
                       label: AppStrings.signIn,
                       size: AppButtonSize.large,

@@ -10,6 +10,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/validators/validators.dart';
 import '../../../../shared/widgets/app_banner.dart';
 import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/app_checkbox.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
@@ -46,6 +47,9 @@ class _RegisterViewState extends State<RegisterView> {
   String? _emailError;
   String? _phoneError;
   String? _passwordError;
+  String? _consentError;
+  bool _consentAccepted = false;
+  final GlobalKey _consentKey = GlobalKey();
 
   @override
   void dispose() {
@@ -87,6 +91,7 @@ class _RegisterViewState extends State<RegisterView> {
       email: _emailController.text.trim(),
       phone: phone.isEmpty ? null : phone,
       password: _passwordController.text,
+      consentAccepted: _consentAccepted,
     );
 
     if (!mounted) {
@@ -114,6 +119,9 @@ class _RegisterViewState extends State<RegisterView> {
     final String? passwordError = AppValidators.newPassword(
       _passwordController.text,
     );
+    final String? consentError = _consentAccepted
+        ? null
+        : AppStrings.privacyConsentRequired;
 
     setState(() {
       _namesError = namesError;
@@ -122,6 +130,7 @@ class _RegisterViewState extends State<RegisterView> {
       _emailError = emailError;
       _phoneError = phoneError;
       _passwordError = passwordError;
+      _consentError = consentError;
     });
 
     final List<(FocusNode, String?)> fields = <(FocusNode, String?)>[
@@ -138,7 +147,64 @@ class _RegisterViewState extends State<RegisterView> {
         return false;
       }
     }
+    if (consentError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final BuildContext? consentContext = _consentKey.currentContext;
+        if (consentContext == null) {
+          return;
+        }
+        Scrollable.ensureVisible(
+          consentContext,
+          duration: const Duration(milliseconds: 200),
+          alignment: 0.9,
+        );
+      });
+      return false;
+    }
     return true;
+  }
+
+  void _onConsentChanged(bool accepted) {
+    setState(() {
+      _consentAccepted = accepted;
+      if (accepted) {
+        _consentError = null;
+      }
+    });
+    _clearAuthError();
+  }
+
+  Future<void> _showPrivacyNotice() async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text(AppStrings.privacyNoticeTitle),
+          scrollable: true,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                AppStrings.privacyNoticeVersionLabel,
+                style: AppTypography.small.copyWith(
+                  color: AppColors.contentSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sp3),
+              Text(AppStrings.privacyNoticeBody, style: AppTypography.body),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(AppStrings.privacyNoticeClose),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _clearFieldError(String? error, VoidCallback clear) {
@@ -327,7 +393,22 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                       onSubmitted: (_) => _submit(),
                     ),
-                    const SizedBox(height: AppSpacing.sp5),
+                    const SizedBox(height: AppSpacing.sp3),
+                    AppCheckbox(
+                      key: _consentKey,
+                      value: _consentAccepted,
+                      onChanged: _onConsentChanged,
+                      label: AppStrings.privacyConsentLabel,
+                      errorText: _consentError,
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: _showPrivacyNotice,
+                        child: const Text(AppStrings.privacyNoticeOpen),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sp2),
                     AppButton(
                       label: AppStrings.registerButton,
                       size: AppButtonSize.large,

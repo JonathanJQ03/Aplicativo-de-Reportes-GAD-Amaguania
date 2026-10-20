@@ -131,6 +131,7 @@ void main() {
         email: 'vecino@ejemplo.com',
         phone: '0991234567',
         password: 'Vecino123!',
+        consentAccepted: true,
       );
 
       expect(result, isTrue);
@@ -154,11 +155,27 @@ void main() {
         cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
+        consentAccepted: true,
       );
 
       expect(result, isFalse);
       expect(repository.signUpCalls, 0);
       expect(viewModel.errorMessage, AppStrings.authMissingRegistrationData);
+    });
+
+    test('no registra sin aceptar el aviso de privacidad', () async {
+      final bool result = await viewModel.signUp(
+        nombres: 'María',
+        apellidos: 'Pérez',
+        cedula: '1710034065',
+        email: 'vecino@ejemplo.com',
+        password: 'Vecino123!',
+        consentAccepted: false,
+      );
+
+      expect(result, isFalse);
+      expect(repository.signUpCalls, 0);
+      expect(viewModel.errorMessage, AppStrings.authConsentRequired);
     });
 
     test('traduce el correo ya registrado durante el registro', () async {
@@ -172,6 +189,7 @@ void main() {
         cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
+        consentAccepted: true,
       );
 
       expect(result, isFalse);
@@ -191,6 +209,7 @@ void main() {
         cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
+        consentAccepted: true,
       );
 
       expect(result, isFalse);
@@ -206,6 +225,7 @@ void main() {
         cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
+        consentAccepted: true,
       );
 
       expect(viewModel.isLoading, isTrue);
@@ -215,6 +235,52 @@ void main() {
 
       expect(await pending, isTrue);
       expect(viewModel.isLoading, isFalse);
+    });
+
+    test('envía el enlace de recuperación y marca el estado', () async {
+      final bool result = await viewModel.requestPasswordReset(
+        ' vecino@ejemplo.com ',
+      );
+
+      expect(result, isTrue);
+      expect(repository.passwordResetCalls, 1);
+      expect(repository.lastPasswordResetEmail, 'vecino@ejemplo.com');
+      expect(viewModel.passwordResetSent, isTrue);
+      expect(viewModel.errorMessage, isNull);
+      expect(viewModel.isLoading, isFalse);
+    });
+
+    test('no envía recuperación sin correo', () async {
+      final bool result = await viewModel.requestPasswordReset('   ');
+
+      expect(result, isFalse);
+      expect(repository.passwordResetCalls, 0);
+      expect(viewModel.passwordResetSent, isFalse);
+      expect(viewModel.errorMessage, AppStrings.validationEmailRequired);
+    });
+
+    test('traduce el fallo al enviar recuperación', () async {
+      repository.passwordResetFailure = const AuthFailure(
+        AuthFailureReason.network,
+      );
+
+      final bool result = await viewModel.requestPasswordReset(
+        'vecino@ejemplo.com',
+      );
+
+      expect(result, isFalse);
+      expect(viewModel.passwordResetSent, isFalse);
+      expect(viewModel.errorMessage, AppStrings.authNetwork);
+    });
+
+    test('limpia el resultado de recuperación al editar el correo', () async {
+      await viewModel.requestPasswordReset('vecino@ejemplo.com');
+      expect(viewModel.passwordResetSent, isTrue);
+
+      viewModel.clearPasswordResetState();
+
+      expect(viewModel.passwordResetSent, isFalse);
+      expect(viewModel.errorMessage, isNull);
     });
 
     test('cierra la sesión correctamente', () async {
