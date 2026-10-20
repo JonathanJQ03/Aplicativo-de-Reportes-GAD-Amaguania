@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// Reglas de Firestore de VeciApp.
+//
+// TODO(S07): ampliar las reglas por rol (administrador del GAD, reportes,
+// residencias y auditoría). Por ahora solo se permite que cada vecino lea y
+// cree su propio perfil, separando los datos públicos de los sensibles.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users_private/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
