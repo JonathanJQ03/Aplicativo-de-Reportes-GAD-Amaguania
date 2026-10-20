@@ -49,6 +49,41 @@ abstract final class AppStrings {
   static const String registerGoToLogin = 'Inicia sesión';
   static const String backToLogin = 'Volver al inicio de sesión';
 
+  // Verificación del correo.
+  static const String verifyEmailScreenTitle = 'Verifica tu correo';
+  static const String verifyEmailTitle = 'Confirma tu correo';
+  static const String verifyEmailBody =
+      'Abre el enlace que enviamos a tu correo y vuelve aquí. '
+      'Hasta confirmarlo, no podrás ingresar.';
+  static const String verifyEmailCurrentEmailLabel = 'Correo registrado';
+  static const String verifyEmailCheckButton = 'Ya verifiqué mi correo';
+  static const String verifyEmailResendButton = 'Reenviar correo';
+  static const String verifyEmailChangeButton = 'Cambiar correo';
+  static const String verifyEmailCancelButton = 'Cancelar y cerrar sesión';
+  static const String verifyEmailSent =
+      'Te enviamos un nuevo enlace de verificación. Revisa tu correo.';
+  static const String verifyEmailStillPending =
+      'Todavía no confirmamos tu correo. Abre el enlace y vuelve a intentarlo.';
+  static const String verifyEmailSpamHint =
+      'Si no llega en unos minutos, revisa la carpeta de spam.';
+  static const String verifyEmailDevelopmentNotice =
+      'Modo de desarrollo: la verificación se completará automáticamente en '
+      '3 segundos.';
+  static const String verifyEmailChangeTitle = 'Cambiar correo electrónico';
+  static const String verifyEmailChangeBody =
+      'Te enviaremos un enlace al nuevo correo. El cambio se completa cuando '
+      'lo verifiques.';
+  static const String verifyEmailChangeSubmit = 'Enviar enlace';
+  static const String verifyEmailChangeCancel = 'Cancelar';
+  static const String verifyEmailChangeSame =
+      'Escribe un correo diferente al que tienes registrado.';
+  static const String verifyEmailChangeSent =
+      'Te enviamos un enlace al nuevo correo. Ábrelo para completar el cambio.';
+  static const String verifyEmailChangePendingPrefix =
+      'Pendiente de verificar:';
+  static const String verifyEmailChangePendingBody =
+      'Tu correo actual sigue activo hasta que confirmes el nuevo.';
+
   // Validación de formularios.
   static const String validationEmailRequired =
       'Escribe tu correo electrónico.';
@@ -84,7 +119,6 @@ abstract final class AppStrings {
       'en la siguiente etapa.';
 
   // Títulos de pantallas pendientes de implementar.
-  static const String verifyCodeTitle = 'Verificar código';
   static const String forgotPasswordTitle = 'Recuperar contraseña';
   static const String profileTitle = 'Mi perfil';
   static const String myReportsTitle = 'Mis reportes';
@@ -124,6 +158,13 @@ abstract final class AppStrings {
       'No pudimos crear tu cuenta. Intenta de nuevo en unos momentos.';
   static const String authMissingRegistrationData =
       'Completa todos los campos obligatorios.';
+  static const String authRequiresRecentLogin =
+      'Por seguridad, cierra sesión y vuelve a entrar para cambiar el correo.';
+  static const String authVerificationEmailFailed =
+      'No pudimos enviar el correo de verificación. Revisa tu conexión e '
+      'intenta de nuevo.';
+  static const String authEmailChangeFailed =
+      'No pudimos cambiar el correo. Revisa la dirección e intenta de nuevo.';
 
   // Panel de administración (stub hasta S15).
   static const String adminPanelTitle = 'Panel de administración';

@@ -33,4 +33,21 @@ abstract interface class AuthRepository {
 
   /// Cierra la sesión actual.
   Future<void> signOut();
+
+  /// Envía un nuevo enlace de verificación al correo de la cuenta actual.
+  ///
+  /// Lanza [AuthFailure] si no hay sesión o si Firebase rechaza el envío.
+  Future<void> sendVerificationEmail();
+
+  /// Recarga la cuenta desde Firebase y devuelve su estado actualizado.
+  ///
+  /// Devuelve `null` si ya no hay sesión. Si el correo quedó verificado,
+  /// sincroniza `users_private.email` con el correo actual de Auth.
+  Future<AppUser?> reloadCurrentUser();
+
+  /// Solicita cambiar el correo de la cuenta actual.
+  ///
+  /// Firebase envía un enlace al nuevo correo; el cambio se completa cuando el
+  /// usuario lo verifica. Lanza [AuthFailure] si la operación no es posible.
+  Future<void> requestEmailChange(String newEmail);
 }

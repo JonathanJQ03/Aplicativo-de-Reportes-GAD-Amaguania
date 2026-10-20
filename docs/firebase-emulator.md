@@ -1,9 +1,10 @@
 # Firebase local en desarrollo
 
 S01 usa **Firebase Authentication** con correo y contraseña. S03 agrega el
-registro de vecinos y guarda el perfil en **Cloud Firestore**. Para no subir
-claves ni archivos de configuración al repositorio, el modo de desarrollo usa un
-proyecto demo y los emuladores locales.
+registro de vecinos y guarda el perfil en **Cloud Firestore**. S05 agrega la
+verificación del correo y el cambio de correo. Para no subir claves ni archivos
+de configuración al repositorio, el modo de desarrollo usa un proyecto demo y
+los emuladores locales.
 
 ## Requisitos
 
@@ -85,17 +86,72 @@ Al crear una cuenta se escribe:
 - `users/{uid}`: nombre visible, rol `vecino` y fecha de creación.
 - `users_private/{uid}`: nombres, apellidos, cédula, correo y teléfono.
 
-El correo es obligatorio y el teléfono es opcional. La cédula solo se valida por
-formato en S03; el algoritmo ecuatoriano y la detección de duplicados llegan en
-S04.
+El correo es obligatorio y el teléfono es opcional. La cédula se valida con el
+algoritmo ecuatoriano (S04). La detección de **cédulas duplicadas sigue
+pendiente** y no debe darse por terminada.
 
-## 5. Usar un proyecto real de Firebase
+## 5. Verificación de correo (S05)
 
-Pasa las claves por `--dart-define` y desactiva los emuladores:
+Al registrarse, Firebase envía un enlace de verificación. La app guarda el
+perfil, pero el guard del router mantiene al usuario en `/verify-email` hasta
+que el correo esté verificado.
+
+### Importante: los emuladores no envían correos reales
+
+El emulador de Authentication **captura** el correo y el enlace; no los entrega
+a Gmail, Outlook ni a ninguna dirección real. Por eso no es posible validar una
+cuenta con un correo personal usando solo los emuladores.
+
+Para obtener el enlace de verificación:
+
+```bash
+curl -s http://127.0.0.1:9099/emulator/v1/projects/demo-veciapp/oobCodes
+```
+
+El JSON devuelve un `oobLink` para cada solicitud. Abre ese enlace en el
+navegador para simular el clic del correo; después vuelve a la app y usa **“Ya
+verifiqué mi correo”**. También puedes revisar las solicitudes en la interfaz
+del emulador (`http://127.0.0.1:4000`, pestaña **Authentication**).
+
+### Modo temporal de desarrollo
+
+Para no bloquear el avance mientras no haya un proyecto real, la app debug
+desbloquea la cuenta **localmente** a los 3 segundos:
+
+- no marca `emailVerified` en Firebase;
+- no escribe en Firestore;
+- no envía ningún correo;
+- una build release mantiene el bloqueo.
+
+El valor se controla con `FIREBASE_AUTO_VERIFY_EMAIL` y por defecto es
+`kDebugMode` (activo solo en debug). Se puede desactivar:
+
+```bash
+flutter run \
+  --dart-define=FIREBASE_EMULATOR_HOST=localhost \
+  --dart-define=FIREBASE_AUTO_VERIFY_EMAIL=false
+```
+
+Este modo es temporal. La verificación real se implementará con un **código de
+6 dígitos** y un backend/proveedor de correo, según la decisión del usuario.
+
+### Cambio de correo
+
+El cambio usa `verifyBeforeUpdateEmail`: el correo anterior sigue activo hasta
+que se confirme el nuevo. Si hay un cambio pendiente, **“Reenviar correo”**
+reenvía al correo nuevo. Al verificarse, la app intenta sincronizar el campo
+`email` de `users_private`; la regla de Firestore permite al dueño actualizar
+solo ese campo. La sincronización es best-effort y no bloquea el acceso.
+
+## 6. Usar un proyecto real de Firebase
+
+Pasa las claves por `--dart-define`, desactiva los emuladores y, si vas a probar
+la verificación real, desactiva el desbloqueo temporal:
 
 ```bash
 flutter run \
   --dart-define=FIREBASE_USE_EMULATOR=false \
+  --dart-define=FIREBASE_AUTO_VERIFY_EMAIL=false \
   --dart-define=FIREBASE_PROJECT_ID=tu-proyecto \
   --dart-define=FIREBASE_API_KEY=tu-api-key \
   --dart-define=FIREBASE_APP_ID=tu-app-id \
@@ -103,7 +159,9 @@ flutter run \
 ```
 
 También puedes configurar los archivos nativos con `flutterfire configure` y
-ejecutar con `--dart-define=FIREBASE_USE_EMULATOR=false`.
+ejecutar con `--dart-define=FIREBASE_USE_EMULATOR=false`. Con un proyecto real,
+Firebase sí envía el enlace al correo registrado. El **código de 6 dígitos**
+todavía no está implementado; el flujo actual usa un enlace.
 
 ## Seguridad
 
@@ -114,6 +172,7 @@ Nunca se versionan estos archivos (ya están en `.gitignore`):
 - `lib/firebase_options.dart`
 - `.env` y variantes
 
-Tampoco se registran en logs correos, contraseñas, cédulas ni teléfonos. Las
-reglas de Firestore no son abiertas: exigen una sesión activa y que el `uid`
-coincida con el documento.
+Tampoco se registran en logs correos, contraseñas, cédulas ni teléfonos. No se
+guarda en el repositorio el correo real usado para una prueba. Las reglas de
+Firestore no son abiertas: exigen una sesión activa y que el `uid` coincida con
+el documento.

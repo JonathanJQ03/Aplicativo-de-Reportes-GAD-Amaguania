@@ -14,9 +14,17 @@ import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 /// Recibe el repositorio de autenticación para poder probar la app con un
 /// doble en memoria sin inicializar Firebase.
 class VeciApp extends StatefulWidget {
-  const VeciApp({super.key, required this.authRepository});
+  const VeciApp({
+    super.key,
+    required this.authRepository,
+    this.autoVerifyEmail = false,
+  });
 
   final AuthRepository authRepository;
+
+  /// Modo temporal de desarrollo para no bloquear la app mientras se conecta
+  /// un proyecto real de Firebase y se implementa la verificación definitiva.
+  final bool autoVerifyEmail;
 
   @override
   State<VeciApp> createState() => _VeciAppState();
@@ -29,7 +37,10 @@ class _VeciAppState extends State<VeciApp> {
   @override
   void initState() {
     super.initState();
-    _authViewModel = AuthViewModel(repository: widget.authRepository);
+    _authViewModel = AuthViewModel(
+      repository: widget.authRepository,
+      autoVerifyEmail: widget.autoVerifyEmail,
+    );
     _router = createAppRouter(_authViewModel);
   }
 

@@ -51,6 +51,13 @@ void main() {
       );
     });
 
+    test('pide volver a iniciar sesión para operaciones sensibles', () {
+      expect(
+        authFailureReasonForCode('requires-recent-login'),
+        AuthFailureReason.requiresRecentLogin,
+      );
+    });
+
     test('usa desconocido para códigos no contemplados', () {
       expect(
         authFailureReasonForCode('internal-error'),

@@ -17,12 +17,19 @@ Future<void> main() async {
         'emulador=${setup.useAuthEmulator}',
       );
     }
+    // Temporal mientras no haya un proyecto real ni verificación por código.
+    // En release el valor por defecto es `false` y la cuenta sigue bloqueada.
+    const bool autoVerifyEmail = bool.fromEnvironment(
+      'FIREBASE_AUTO_VERIFY_EMAIL',
+      defaultValue: kDebugMode,
+    );
     runApp(
       VeciApp(
         authRepository: FirebaseAuthRepository(
           useEmulator: setup.useAuthEmulator,
           emulatorHost: setup.authEmulatorHost,
         ),
+        autoVerifyEmail: autoVerifyEmail,
       ),
     );
   } catch (error) {

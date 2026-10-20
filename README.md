@@ -11,7 +11,7 @@ publica después de la aprobación de un administrador del GAD.
 
 ## Estado del proyecto
 
-🚧 **Sesión actual: S02 — Validación de campos.**
+🚧 **Sesión actual: S05 — Verificación de correo (modo local temporal).**
 
 Completado:
 
@@ -19,6 +19,13 @@ Completado:
   centralizados, widgets compartidos y localización en español.
 - **S01:** login con Firebase Authentication, sesión persistente y cierre de
   sesión.
+- **S02:** validadores reutilizables, mensajes claros y estados de error.
+- **S03:** registro de vecinos con perfil público y datos privados separados.
+- **S04:** validación de la cédula ecuatoriana (duplicados pendientes).
+- **S05 (parcial):** pantalla de verificación, guard de correo, reenvío, cambio
+  de correo y cancelación. En debug se desbloquea la cuenta a los 3 segundos
+  para no bloquear el avance; **la verificación real por código de 6 dígitos y
+  el envío a un correo real siguen pendientes**.
 
 Consulta `PROGRESS.md` para el detalle y `AGENTS.md` para la hoja de ruta.
 

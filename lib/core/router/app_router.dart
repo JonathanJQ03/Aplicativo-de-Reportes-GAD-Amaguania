@@ -4,7 +4,7 @@ import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../features/auth/presentation/views/forgot_password_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
-import '../../features/auth/presentation/views/verify_code_view.dart';
+import '../../features/auth/presentation/views/verify_email_view.dart';
 import '../../features/home/views/home_view.dart';
 import '../../features/profile/views/profile_view.dart';
 import '../../features/reports/views/my_reports_view.dart';
@@ -12,13 +12,14 @@ import '../../features/reports/views/new_leak_report_view.dart';
 import '../../features/reports/views/new_pet_report_view.dart';
 import '../../features/reports/views/report_detail_view.dart';
 
-/// Construye el router con una guarda básica de sesión.
+/// Construye el router con la guarda de sesión y de correo verificado.
 ///
-/// En S01 la guarda solo distingue entre sesión abierta y cerrada. La
-/// restricción por roles se agrega en S07.
+/// La restricción por roles se agrega en S07. Mientras el correo no esté
+/// confirmado, el usuario solo puede ver la pantalla de verificación.
 GoRouter createAppRouter(AuthViewModel authViewModel) {
   // Rutas accesibles sin sesión. S06 agregará '/forgot-password'.
   const Set<String> publicRoutes = <String>{'/login', '/register'};
+  const String verifyEmailRoute = '/verify-email';
 
   return GoRouter(
     initialLocation: '/login',
@@ -26,11 +27,15 @@ GoRouter createAppRouter(AuthViewModel authViewModel) {
     redirect: (context, state) {
       final bool isLoggedIn = authViewModel.isAuthenticated;
       final bool isPublicRoute = publicRoutes.contains(state.matchedLocation);
+      final bool isVerifyEmailRoute = state.matchedLocation == verifyEmailRoute;
 
       if (!isLoggedIn) {
         return isPublicRoute ? null : '/login';
       }
-      if (isPublicRoute) {
+      if (!authViewModel.isEmailVerified) {
+        return isVerifyEmailRoute ? null : verifyEmailRoute;
+      }
+      if (isPublicRoute || isVerifyEmailRoute) {
         return '/';
       }
       return null;
@@ -42,8 +47,8 @@ GoRouter createAppRouter(AuthViewModel authViewModel) {
         builder: (context, state) => const RegisterView(),
       ),
       GoRoute(
-        path: '/verify-code',
-        builder: (context, state) => const VerifyCodeView(),
+        path: verifyEmailRoute,
+        builder: (context, state) => const VerifyEmailView(),
       ),
       GoRoute(
         path: '/forgot-password',
