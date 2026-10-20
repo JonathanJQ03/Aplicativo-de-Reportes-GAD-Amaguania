@@ -17,6 +17,7 @@ const AppUser _user = AppUser(
   uid: 'uid-1',
   email: 'vecino@ejemplo.com',
   role: UserRole.vecino,
+  emailVerified: true,
 );
 
 void main() {

@@ -24,11 +24,18 @@ class FakeAuthRepository implements AuthRepository {
 
   AuthFailure? failure;
   AuthFailure? signUpFailure;
+  AuthFailure? verificationFailure;
+  AuthFailure? emailChangeFailure;
+  AppUser? reloadResult;
   Completer<AppUser>? pendingSignIn;
   Completer<AppUser>? pendingSignUp;
   int signInCalls = 0;
   int signUpCalls = 0;
   int signOutCalls = 0;
+  int sendVerificationCalls = 0;
+  int reloadCalls = 0;
+  int requestEmailChangeCalls = 0;
+  String? lastRequestedEmail;
   SignUpRequest? lastSignUp;
 
   @override
@@ -55,6 +62,7 @@ class FakeAuthRepository implements AuthRepository {
       uid: 'uid-1',
       email: email.trim(),
       role: UserRole.vecino,
+      emailVerified: true,
     );
     _save(user);
     return user;
@@ -91,8 +99,10 @@ class FakeAuthRepository implements AuthRepository {
       email: email.trim(),
       role: UserRole.vecino,
       displayName: '$nombres $apellidos'.trim(),
+      emailVerified: false,
     );
     _save(user);
+    sendVerificationCalls++;
     return user;
   }
 
@@ -101,6 +111,32 @@ class FakeAuthRepository implements AuthRepository {
     signOutCalls++;
     _currentUser = null;
     _controller.add(null);
+  }
+
+  @override
+  Future<void> sendVerificationEmail() async {
+    sendVerificationCalls++;
+    if (verificationFailure != null) {
+      throw verificationFailure!;
+    }
+  }
+
+  @override
+  Future<AppUser?> reloadCurrentUser() async {
+    reloadCalls++;
+    if (reloadResult != null) {
+      _save(reloadResult);
+    }
+    return _currentUser;
+  }
+
+  @override
+  Future<void> requestEmailChange(String newEmail) async {
+    requestEmailChangeCalls++;
+    lastRequestedEmail = newEmail;
+    if (emailChangeFailure != null) {
+      throw emailChangeFailure!;
+    }
   }
 
   void emit(AppUser? user) {

@@ -12,6 +12,13 @@ const AppUser _user = AppUser(
   uid: 'uid-1',
   email: 'vecino@ejemplo.com',
   role: UserRole.vecino,
+  emailVerified: true,
+);
+
+const AppUser _unverifiedUser = AppUser(
+  uid: 'uid-1',
+  email: 'vecino@ejemplo.com',
+  role: UserRole.vecino,
 );
 
 void main() {
@@ -237,6 +244,114 @@ void main() {
       viewModel.clearError();
 
       expect(viewModel.errorMessage, isNull);
+    });
+
+    test('reenvía la verificación y muestra la confirmación', () async {
+      final bool result = await viewModel.resendVerificationEmail();
+
+      expect(result, isTrue);
+      expect(repository.sendVerificationCalls, 1);
+      expect(viewModel.infoMessage, AppStrings.verifyEmailSent);
+      expect(viewModel.errorMessage, isNull);
+      expect(viewModel.isLoading, isFalse);
+    });
+
+    test('traduce el fallo al reenviar la verificación', () async {
+      repository.verificationFailure = const AuthFailure(
+        AuthFailureReason.verificationEmailFailed,
+      );
+
+      final bool result = await viewModel.resendVerificationEmail();
+
+      expect(result, isFalse);
+      expect(viewModel.errorMessage, AppStrings.authVerificationEmailFailed);
+    });
+
+    test('mantiene el bloqueo si el correo sigue sin verificar', () async {
+      repository.emit(_unverifiedUser);
+      await Future<void>.delayed(Duration.zero);
+
+      await viewModel.refreshUser();
+
+      expect(viewModel.isEmailVerified, isFalse);
+      expect(viewModel.needsEmailVerification, isTrue);
+      expect(viewModel.infoMessage, AppStrings.verifyEmailStillPending);
+    });
+
+    test('desbloquea la sesión cuando el correo quedó verificado', () async {
+      repository.emit(_unverifiedUser);
+      await Future<void>.delayed(Duration.zero);
+      repository.reloadResult = _user;
+
+      await viewModel.refreshUser();
+
+      expect(viewModel.isEmailVerified, isTrue);
+      expect(viewModel.needsEmailVerification, isFalse);
+      expect(viewModel.infoMessage, isNull);
+    });
+
+    test('solicita el cambio de correo y guarda el pendiente', () async {
+      repository.emit(_unverifiedUser);
+      await Future<void>.delayed(Duration.zero);
+
+      final bool result = await viewModel.requestEmailChange(
+        ' nuevo@ejemplo.com ',
+      );
+
+      expect(result, isTrue);
+      expect(repository.requestEmailChangeCalls, 1);
+      expect(repository.lastRequestedEmail, 'nuevo@ejemplo.com');
+      expect(viewModel.pendingEmail, 'nuevo@ejemplo.com');
+      expect(viewModel.infoMessage, AppStrings.verifyEmailChangeSent);
+    });
+
+    test('reenvía al correo nuevo si hay un cambio pendiente', () async {
+      repository.emit(_unverifiedUser);
+      await Future<void>.delayed(Duration.zero);
+      await viewModel.requestEmailChange('nuevo@ejemplo.com');
+
+      final bool result = await viewModel.resendVerificationEmail();
+
+      expect(result, isTrue);
+      expect(repository.requestEmailChangeCalls, 2);
+      expect(repository.lastRequestedEmail, 'nuevo@ejemplo.com');
+      expect(repository.sendVerificationCalls, 0);
+    });
+
+    test('el modo temporal desbloquea la cuenta sin verificar', () async {
+      final FakeAuthRepository temporaryRepository = FakeAuthRepository(
+        initialUser: _unverifiedUser,
+      );
+      final AuthViewModel temporaryViewModel = AuthViewModel(
+        repository: temporaryRepository,
+        autoVerifyEmail: true,
+        autoVerifyDelay: const Duration(milliseconds: 5),
+      );
+      addTearDown(() async {
+        temporaryViewModel.dispose();
+        await temporaryRepository.dispose();
+      });
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(temporaryViewModel.isEmailVerified, isTrue);
+      expect(temporaryViewModel.needsEmailVerification, isFalse);
+    });
+
+    test('traduce el fallo por inicio de sesión antiguo', () async {
+      repository.emit(_unverifiedUser);
+      await Future<void>.delayed(Duration.zero);
+      repository.emailChangeFailure = const AuthFailure(
+        AuthFailureReason.requiresRecentLogin,
+      );
+
+      final bool result = await viewModel.requestEmailChange(
+        'nuevo@ejemplo.com',
+      );
+
+      expect(result, isFalse);
+      expect(viewModel.pendingEmail, isNull);
+      expect(viewModel.errorMessage, AppStrings.authRequiresRecentLogin);
     });
   });
 }
