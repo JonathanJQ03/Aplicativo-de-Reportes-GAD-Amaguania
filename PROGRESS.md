@@ -1,6 +1,6 @@
 # PROGRESS
 
-**Sesión actual:** S02 — Validación de campos (pendiente de inicio)
+**Sesión actual:** S02 — Validación de campos (completada)
 **Última actualización:** 2026-10-19
 
 ## Completadas
@@ -10,15 +10,19 @@
   localización en español y `PROGRESS.md`.
 - S01 — Login ✅ (RF-04): pantalla de inicio de sesión, conexión con Firebase
   Authentication, sesión persistente, cierre de sesión y redirección básica.
+- S02 — Validación de campos ✅ (RNF-05): validadores reutilizables de
+  obligatoriedad y correo, mensajes claros en español, validación del login,
+  estados de error de `AppTextField` con borde, icono y mensaje, foco en el
+  primer campo inválido, pruebas unitarias y de widget.
 
 ## En curso
 
-Ninguna. La siguiente sesión es S02 y no se inicia hasta que el usuario lo
-indique.
+Ninguna. La siguiente sesión es S03 (registro) y no se inicia hasta que el
+usuario lo indique.
 
 ## Pendientes
 
-S02 … S28 (ver `AGENTS.md`).
+S03 … S28 (ver `AGENTS.md`).
 
 ## Decisiones tomadas
 
@@ -39,11 +43,20 @@ S02 … S28 (ver `AGENTS.md`).
   `lib/main.dart` delega en él para que `flutter run` siga funcionando.
   `lib/main_admin.dart` existe como marcador con el tema aplicado; el panel
   real se construye en S15.
+- (2026-10-19) Los validadores compartidos viven en
+  `lib/shared/validators/validators.dart` y los mensajes visibles en
+  `AppStrings`. El login valida el formato del correo y exige la contraseña en
+  la capa de presentación; el ViewModel conserva una comprobación defensiva de
+  campos vacíos.
+- (2026-10-19) En el login la contraseña solo se exige escrita. Las reglas de
+  fortaleza se definirán en el registro (S03), junto con la validación de
+  cédula en S04.
+- (2026-10-19) La validación se muestra al enviar; al corregir un campo se
+  limpia su error y se enfoca el primer campo inválido. Los errores de Firebase
+  siguen mostrándose en el aviso superior.
 
 ## Deuda y TODO
 
-- TODO(S02): validadores reutilizables y estados de error de `AppTextField`.
-  Por ahora el login solo comprueba que los campos no estén vacíos.
 - TODO(S03): formulario de registro; TODO(S05): verificación por correo;
   TODO(S06): consentimiento y recuperación de contraseña. Sus pantallas siguen
   como stubs sin enlaces desde el login.
@@ -51,9 +64,19 @@ S02 … S28 (ver `AGENTS.md`).
 - TODO(S08): reemplazar `HomeView` por la navegación principal definitiva.
 - TODO(S15): construir el panel de administración sobre el marcador
   `lib/main_admin.dart`.
-- El entorno de esta sesión no tiene Java, Chrome ni el toolchain de Android
-  disponible, así que no se pudo abrir la app en un dispositivo. La sesión se
-  verificó con `flutter analyze` y `flutter test`, incluidos pruebas de widget
-  del login y de la redirección de sesión.
+- Verificado en un dispositivo físico Samsung SM-A546E: APK debug compilado,
+  instalado y capturas de los estados de error en
+  `/home/javier/Descargas/VeciApp/` (`s02-login-errores-vacios.png` y
+  `s02-login-correo-invalido.png`). El login real contra Firebase no se pudo
+  completar desde el teléfono porque el build apunta al emulador de Auth en
+  `10.0.2.2`; para probarlo hay que levantar el emulador y recompilar con
+  `--dart-define=FIREBASE_EMULATOR_HOST=<IP de la PC>`, o configurar un
+  proyecto real.
+- `android/gradle.properties` tiene un ajuste local (heap de 2 GB, sin daemon
+  ni incremental) para compilar en este equipo; no se incluyó en los commits de
+  S02 para no imponerlo al resto del equipo.
+- El repositorio no incluye `docs/SRS.pdf` (la carpeta `docs/srs` está vacía);
+  S02 se basó en la hoja de ruta de `AGENTS.md` y RNF-05. Pedir el SRS si hace
+  falta para S03/S04.
 - El emulador de Firebase requiere Node.js y Java 17; las instrucciones están
   en `docs/firebase-emulator.md`.
