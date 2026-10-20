@@ -1,6 +1,6 @@
 # PROGRESS
 
-**Sesión actual:** S04 — Validación de cédula (completada con alcance ajustado)
+**Sesión actual:** S05 — Verificación de correo (modo local temporal)
 **Última actualización:** 2026-10-20
 
 > Contexto detallado para retomar el trabajo: [`docs/contexto-sesion.md`](docs/contexto-sesion.md).
@@ -17,30 +17,45 @@
   estados de error de `AppTextField` con borde, icono y mensaje, foco en el
   primer campo inválido, pruebas unitarias y de widget.
 - S03 — Registro ✅ (RF-01): formulario de cuenta con nombres, apellidos,
-  cédula, correo obligatorio, teléfono opcional y contraseña; validadores de
-  nombre, cédula (formato), teléfono y contraseña nueva; creación de la cuenta
-  en Firebase Authentication con rol `vecino`; perfil público en `users` y
-  datos sensibles en `users_private`; mensajes claros de error; pruebas
+  cédula, correo obligatorio, teléfono opcional y contraseña; creación de la
+  cuenta en Firebase Authentication con rol `vecino`; perfil público en `users`
+  y datos sensibles en `users_private`; mensajes claros de error; pruebas
   unitarias y de widget.
 - S04 — Validación de cédula ✅ (RF-02, alcance ajustado): algoritmo
-  ecuatoriano módulo 10 en `CedulaValidator` (10 dígitos, provincia 01–24,
-  tercer dígito menor a 6 y dígito verificador), formateo con guion,
-  integración con `AppValidators.cedula` y el formulario de registro, mensaje
-  específico para cédulas con algoritmo inválido y pruebas unitarias y de
-  widget. La detección de **cédulas duplicadas quedó diferida** por decisión
-  del usuario (ver “Decisiones tomadas” y “Deuda y TODO”).
+  ecuatoriano módulo 10 en `CedulaValidator`, formateo con guion, integración
+  con `AppValidators.cedula` y el formulario de registro, mensaje específico
+  para cédulas con algoritmo inválido. La detección de **cédulas duplicadas
+  quedó diferida** por decisión del usuario.
+- S05 — Verificación de correo ⚠️ (RF-03, parcial y en modo local):
+  - pantalla de verificación con correo registrado, reenvío, cambio de correo y
+    cancelación;
+  - guard de router: una cuenta sin correo verificado no entra a la app;
+  - el registro envía el enlace de Firebase y guarda el perfil como en S03;
+  - cambio de correo con `verifyBeforeUpdateEmail`; al confirmar el nuevo
+    correo se sincroniza `users_private.email` y la regla de Firestore permite
+    al dueño actualizar solo ese campo;
+  - **modo temporal de desarrollo**: en builds debug, si el correo no está
+    verificado, se desbloquea la cuenta localmente a los 3 segundos
+    (`FIREBASE_AUTO_VERIFY_EMAIL`, por defecto `true` solo en debug). Esto **no
+    verifica la cuenta en Firebase ni envía un correo real**;
+  - **pendiente para cerrar RF-03 de verdad**: conectar un proyecto real de
+    Firebase, implementar el código de 6 dígitos elegido por el usuario y
+    retirar la verificación automática.
 
 ## En curso
 
-Ninguna. La siguiente sesión es S05 (verificación por correo) y no se inicia
-hasta que el usuario lo indique.
+Ninguna. S05 queda cerrada en su parte de interfaz y flujo local, pero **la
+verificación real del correo sigue pendiente**. No se inicia S06 hasta que el
+usuario lo indique.
 
 ## Pendientes
 
+- **S05 real (RF-03)**: proyecto real de Firebase, envío de correo, código de
+  6 dígitos y eliminación del modo temporal `autoVerifyEmail`.
 - **Detección de cédulas duplicadas** (parte pendiente de RF-02). No se puede
   consultar `users_private` de otros vecinos con las reglas actuales; hay que
   definir el mecanismo antes de implementarla.
-- S05 … S28 (ver `AGENTS.md` para el alcance de cada sesión).
+- S06 … S28 (ver `AGENTS.md` para el alcance de cada sesión).
 
 ## Decisiones tomadas
 
@@ -55,88 +70,89 @@ hasta que el usuario lo indique.
   claves con `--dart-define` y `FIREBASE_USE_EMULATOR=false`. No se versionan
   claves ni archivos de configuración.
 - (2026-10-19) El nombre visible es **VeciApp**, según `AGENTS.md` y
-  `DESIGN.md`. Queda pendiente confirmar la decisión abierta n.º 1 del SRS
-  (VeciApp vs. Amaguaña Alerta).
+  `DESIGN.md`. Queda pendiente confirmar la decisión abierta n.º 1 del SRS.
 - (2026-10-19) El punto de entrada móvil es `lib/main_vecino.dart`;
-  `lib/main.dart` delega en él para que `flutter run` siga funcionando.
-  `lib/main_admin.dart` existe como marcador con el tema aplicado; el panel
-  real se construye en S15.
+  `lib/main.dart` delega en él. `lib/main_admin.dart` sigue como marcador del
+  panel web para S15.
 - (2026-10-19) Los validadores compartidos viven en
   `lib/shared/validators/validators.dart` y los mensajes visibles en
-  `AppStrings`. El login valida el formato del correo y exige la contraseña en
-  la capa de presentación; el ViewModel conserva una comprobación defensiva de
-  campos vacíos.
-- (2026-10-19) La validación se muestra al enviar; al corregir un campo se
-  limpia su error y se enfoca el primer campo inválido. Los errores de Firebase
-  siguen mostrándose en el aviso superior.
-- (2026-10-19) En S03 el **correo es obligatorio y el teléfono es opcional**,
-  según lo acordado con el usuario: el login y la verificación de S05 usan
-  correo. El teléfono se guarda como dato de contacto privado.
-- (2026-10-19) La contraseña nueva exige **mínimo 8 caracteres con mayúscula,
-  minúscula, número y símbolo**. No se pide confirmación de contraseña porque el
-  SRS no la exige.
+  `AppStrings`.
+- (2026-10-19) En S03 el **correo es obligatorio y el teléfono es opcional**.
+  La contraseña nueva exige mínimo 8 caracteres con mayúscula, minúscula,
+  número y símbolo; no se pide confirmación.
 - (2026-10-19) `users/{uid}` guarda el nombre visible, el rol `vecino` y la
   fecha de creación. `users_private/{uid}` guarda nombres, apellidos, cédula,
-  correo, teléfono opcional y fecha. La cédula solo se valida por formato (10
-  dígitos) en S03; el algoritmo ecuatoriano y la detección de duplicados son
-  S04.
-- (2026-10-19) El registro deja la sesión abierta y el router redirige a `/`.
-  Si falla la escritura del perfil, se intenta borrar el usuario recién creado
-  en Auth y se muestra un mensaje claro.
+  correo, teléfono opcional y fecha.
 - (2026-10-19) Las reglas de Firestore de S03 solo permiten a cada usuario leer
-  y crear su propio perfil (`users/{uid}` y `users_private/{uid}`). S07 las
-  ampliará por rol; no se versionan reglas abiertas.
+  y crear su propio perfil. S07 las ampliará por rol.
 - (2026-10-19) Para probar en un teléfono físico con los emuladores se usa
   `adb reverse` y `FIREBASE_EMULATOR_HOST=localhost`. La app desactiva
-  `automaticHostMapping` en Auth y Firestore porque el SDK de Android convierte
-  `localhost` en `10.0.2.2`, que solo existe dentro del emulador de Android.
-  El build de debug permite HTTP local solo hacia `10.0.2.2`, `localhost` y
-  `127.0.0.1`; la build de producción sigue exigiendo HTTPS.
+  `automaticHostMapping` para que `localhost` llegue al equipo.
 - (2026-10-20) **S04 se limita al algoritmo y la validación del formulario.**
-  El usuario decidió no implementar todavía la detección de cédulas duplicadas,
-  para no agregar Cloud Functions, una colección de unicidad ni nuevas
-  dependencias en esta sesión. La detección queda como deuda de RF-02 y debe
-  resolverse con un mecanismo del lado del servidor o una reserva de unicidad
-  que no permita leer cédulas de otros vecinos.
+  La detección de cédulas duplicadas queda como deuda de RF-02.
 - (2026-10-20) `CedulaValidator` es Dart puro y vive en `lib/core/utils/`. La
   regla de provincia se implementa como 01–24, el tercer dígito debe ser 0–5 y
   el verificador se calcula con los coeficientes `[2,1,2,1,2,1,2,1,2]`.
-  `AppValidators.cedula` distingue entre formato inválido (longitud o
-  caracteres) y cédula con algoritmo inválido.
+- (2026-10-20) **S05 conserva el perfil creado al registrarse** y bloquea el
+  acceso con el guard del router hasta que el correo esté verificado.
+- (2026-10-20) **“Cancelar” cierra la sesión**, no elimina la cuenta. El usuario
+  puede volver a entrar y verificar después.
+- (2026-10-20) El cambio de correo usa `verifyBeforeUpdateEmail`: el correo
+  anterior sigue activo hasta que el usuario confirme el nuevo. Al verificarse,
+  la app sincroniza `users_private.email`; la regla de Firestore permite al
+  dueño actualizar únicamente el campo `email`.
+- (2026-10-20) El usuario eligió un **código de 6 dígitos** para la verificación
+  real. No se implementó porque requiere un backend propio o Cloud Functions y
+  un proveedor de correo. El flujo actual de Firebase usa un enlace.
+- (2026-10-20) Los emuladores **no envían correos reales**: guardan el enlace
+  en la consola local. No se guarda en el repositorio el correo real que indicó
+  el usuario. Para enviar a un correo real hace falta configurar un proyecto
+  real de Firebase.
+- (2026-10-20) Como el usuario pidió no bloquear el avance, se agregó el modo
+  temporal `autoVerifyEmail`: **solo debug**, espera 3 segundos y permite entrar
+  sin verificar. Una build release mantiene el bloqueo. Se puede desactivar con
+  `--dart-define=FIREBASE_AUTO_VERIFY_EMAIL=false`.
 
 ## Deuda y TODO
 
+- **TODO(S05): verificación real por código de 6 dígitos.** Requiere decidir el
+  backend (Cloud Functions con plan Blaze o un servicio propio), el proveedor de
+  correo y el almacenamiento seguro de códigos con expiración. Al implementarlo,
+  eliminar `autoVerifyEmail` de `VeciApp` y `main_vecino.dart`.
+- **TODO(S05): probar con un proyecto real de Firebase.** Hoy no hay
+  `google-services.json`, `firebase_options.dart` ni credenciales reales. Los
+  emuladores no entregan correos a Gmail.
 - **TODO(RF-02): detección de cédulas duplicadas.** La validación matemática ya
-  está resuelta, pero el registro todavía permite una cédula repetida. Con las
-  reglas actuales el cliente no puede consultar `users_private` de otros
-  usuarios. Opciones a decidir: Cloud Function con Admin SDK (requiere
-  Functions y probablemente plan Blaze) o una colección de reserva con reglas
-  que impidan duplicados sin exponer la cédula. No implementar por cuenta propia.
-- TODO(S05): verificación por correo; TODO(S06): consentimiento y recuperación
-  de contraseña. Sus pantallas siguen como stubs sin enlaces desde el login.
-- TODO(S07): cargar el rol real desde Firestore, agregar guards por rol,
-  ampliar las reglas de Firestore y Storage e impedir que el cliente escriba un
-  rol distinto de `vecino`.
+  está resuelta, pero el registro todavía permite una cédula repetida. Opciones:
+  Cloud Function con Admin SDK o una colección de reserva con reglas que impidan
+  duplicados sin exponer la cédula. No implementar por cuenta propia.
+- TODO(S06): consentimiento LOPDP y recuperación de contraseña.
+- TODO(S07): cargar el rol real desde Firestore, guards por rol, ampliar reglas
+  de Firestore y Storage e impedir que el cliente escriba un rol distinto de
+  `vecino`.
 - TODO(S08): reemplazar `HomeView` por la navegación principal definitiva.
-- TODO(S15): construir el panel de administración sobre el marcador
-  `lib/main_admin.dart`.
-- `firestore.rules` cubre solo el perfil de S03; todavía no existe
-  `storage.rules` (llega con S07/S10).
+- TODO(S15): construir el panel de administración sobre `lib/main_admin.dart`.
+- La sincronización de `users_private.email` es best-effort: si falla la red o
+  la escritura, no bloquea la verificación y se reintenta en una próxima recarga
+  de la cuenta. Agregar una prueba de reglas de Firestore cuando exista
+  infraestructura para ello.
+- `firestore.rules` cubre solo el perfil; todavía no existe `storage.rules`
+  (llega con S07/S10).
 - Verificado en un dispositivo físico Samsung SM-A546E contra los emuladores
-  locales de Auth y Firestore en S03: APK debug instalado, registro de una
-  cuenta nueva y capturas en `/home/javier/Descargas/VeciApp/`
-  (`s03-01-login.png`, `s03-02-registro.png`, `s03-03-registro-accion.png`,
-  `s03-04-registro-errores.png`, `s03-05-registro-datos.png` y
-  `s03-06-registro-resultado.png`). En Firestore se comprobó que `users` guarda
-  el rol `vecino` y que `users_private` conserva la cédula, el correo y el
-  teléfono separados del perfil público.
-- S04: `dart format .` aplicado, `flutter analyze` sin problemas,
-  **80 pruebas pasan** (`flutter test`) y APK debug compilado e instalado en el
-  Samsung SM-A546E. En el teléfono se comprobó que una cédula con verificador
-  incorrecto (`1710034066`) bloquea el registro con el mensaje nuevo y que al
-  corregirla por una válida (`1710034065`) el error desaparece. Capturas en
-  `/home/javier/Descargas/VeciApp/`:
-  `s04-01-cedula-invalida.png` y `s04-02-cedula-valida.png`.
+  locales de Auth y Firestore:
+  - S03: registro y perfil separado en `users` / `users_private`; capturas
+    `s03-01-login.png` … `s03-06-registro-resultado.png`.
+  - S04: cédula inválida y válida; capturas `s04-01-cedula-invalida.png` y
+    `s04-02-cedula-valida.png`.
+  - S05: pantalla de verificación, cambio de correo pendiente y desbloqueo
+    automático de desarrollo; capturas `s05-01-verificacion.png`,
+    `s05-02-correo-pendiente.png`, `s05-03-verificado.png` y
+    `s05-04-modo-desarrollo.png`.
+- S05: `dart format .` aplicado, `flutter analyze` sin problemas, **102 pruebas
+  pasan** (`flutter test`), APK debug compilado e instalado. Se comprobó el
+  flujo de registro → verificación con enlace del emulador → inicio, el cambio
+  de correo y el desbloqueo automático a los 3 segundos. **No se probó entrega
+  real de correo** porque no hay proyecto real configurado.
 - `android/gradle.properties` tiene un ajuste local (heap de 2 GB, sin daemon
   ni incremental) para compilar en este equipo; no se incluyó en los commits.
 - El SRS está en `docs/srs/SRS_GAD_AMAGUANIA_APLICATIVO_MOVIL.pdf`.
