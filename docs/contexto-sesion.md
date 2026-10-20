@@ -2,7 +2,7 @@
 
 **Última sesión cerrada:** S05 — Verificación de correo (modo local temporal)
 **Fecha:** 2026-10-20
-**Rama:** `feature/s05-verificacion`
+**Rama:** `main` (S05 integrada)
 **Siguiente sesión:** S06 — Consentimiento LOPDP y recuperación de contraseña
 
 > Este documento es un apoyo para retomar el trabajo. La fuente de verdad del
@@ -137,9 +137,11 @@ Puntos importantes:
 
 ## 6. Estado de Git
 
-- Rama de trabajo: `feature/s05-verificacion`, creada desde
-  `feature/s04-cedula`.
-- S03, S04 y S05 no se han integrado a `main`; son ramas de sesión.
+- Rama actual: `main`, sincronizada con `origin/main`.
+- La rama `feature/s05-verificacion` se subió al remoto y luego se integró en
+  `main` con un merge. S03 y S04 ya habían entrado por el PR #1.
+- Las ramas de sesión (`feature/s01-login` … `feature/s05-verificacion`) se
+  conservan como historial; **S06 debe crear su rama desde `main`**.
 - `android/gradle.properties` tiene un ajuste local para compilar en este equipo
   (heap de 2 GB, sin daemon/incremental). **No se commiteó**.
 - `AGENTS.md` y `DESIGN.md` siguen sin versionar en la raíz. No borrarlos ni
@@ -203,12 +205,14 @@ Plan sugerido:
   propio u otro)?
 - ¿Cuándo se integrará la detección de duplicados de cédula?
 - ¿Se versionarán `AGENTS.md` y `DESIGN.md`?
-- ¿Se integrarán las ramas de sesión a `main` antes de continuar?
+- ¿Se eliminarán las ramas de sesión ya integradas o se conservarán como
+  historial?
 
 ## 10. Checklist para retomar
 
 - [ ] Leer `AGENTS.md`, `DESIGN.md`, `PROGRESS.md` y este archivo.
-- [ ] Revisar `git status` y la rama `feature/s05-verificacion`.
+- [ ] Revisar `git status` y partir de `main` (ya incluye S05) para crear la
+      rama de S06.
 - [ ] Confirmar que sigue vigente el modo temporal o desactivarlo si ya hay
       proyecto real.
 - [ ] Levantar Auth + Firestore y configurar `adb reverse` si se prueba en el

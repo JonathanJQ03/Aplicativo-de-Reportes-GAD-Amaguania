@@ -112,6 +112,9 @@ usuario lo indique.
   temporal `autoVerifyEmail`: **solo debug**, espera 3 segundos y permite entrar
   sin verificar. Una build release mantiene el bloqueo. Se puede desactivar con
   `--dart-define=FIREBASE_AUTO_VERIFY_EMAIL=false`.
+- (2026-10-20) La rama `feature/s05-verificacion` se subió al remoto y S05 se
+  integró en `main` con un merge. `main` es la base para S06; la verificación
+  real sigue pendiente.
 
 ## Deuda y TODO
 
