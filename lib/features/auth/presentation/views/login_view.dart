@@ -18,7 +18,10 @@ import '../viewmodels/auth_viewmodel.dart';
 /// La vista solo conversa con [AuthViewModel]; la sesión y los errores se
 /// gestionan en el ViewModel y la capa de datos.
 class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+  const LoginView({super.key, this.adminMode = false});
+
+  /// Ajusta los textos y oculta el registro cuando se usa en el panel del GAD.
+  final bool adminMode;
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -134,6 +137,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     final AuthViewModel auth = context.watch<AuthViewModel>();
     final String? error = auth.errorMessage;
+    final bool adminMode = widget.adminMode;
 
     return Scaffold(
       body: SafeArea(
@@ -159,8 +163,10 @@ class _LoginViewState extends State<LoginView> {
                             color: AppColors.sky,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.water_drop_rounded,
+                          child: Icon(
+                            adminMode
+                                ? Icons.admin_panel_settings_outlined
+                                : Icons.water_drop_rounded,
                             size: 44,
                             color: AppColors.skyStrong,
                           ),
@@ -171,14 +177,18 @@ class _LoginViewState extends State<LoginView> {
                     Semantics(
                       header: true,
                       child: Text(
-                        AppStrings.loginGreeting,
+                        adminMode
+                            ? AppStrings.adminPanelTitle
+                            : AppStrings.loginGreeting,
                         style: AppTypography.h1,
                         textAlign: TextAlign.center,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sp2),
                     Text(
-                      AppStrings.loginSubtitle,
+                      adminMode
+                          ? AppStrings.adminLoginSubtitle
+                          : AppStrings.loginSubtitle,
                       style: AppTypography.body.copyWith(
                         color: AppColors.contentSecondary,
                       ),
@@ -233,26 +243,30 @@ class _LoginViewState extends State<LoginView> {
                       isLoading: auth.isLoading,
                       onPressed: _submit,
                     ),
-                    const SizedBox(height: AppSpacing.sp3),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          AppStrings.loginNoAccount,
-                          style: AppTypography.body.copyWith(
-                            color: AppColors.contentSecondary,
+                    if (!adminMode) ...[
+                      const SizedBox(height: AppSpacing.sp3),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            AppStrings.loginNoAccount,
+                            style: AppTypography.body.copyWith(
+                              color: AppColors.contentSecondary,
+                            ),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () => context.go('/register'),
-                          child: const Text(AppStrings.loginGoToRegister),
-                        ),
-                      ],
-                    ),
+                          TextButton(
+                            onPressed: () => context.go('/register'),
+                            child: const Text(AppStrings.loginGoToRegister),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: AppSpacing.sp4),
                     Text(
-                      AppStrings.loginSupport,
+                      adminMode
+                          ? AppStrings.adminLoginSupport
+                          : AppStrings.loginSupport,
                       style: AppTypography.small.copyWith(
                         color: AppColors.contentTertiary,
                       ),
