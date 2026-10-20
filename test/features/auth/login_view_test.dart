@@ -68,6 +68,24 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('no se desborda al mostrar errores en pantalla pequeña', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await pumpLogin(tester);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(AppButton));
+    await tester.tap(find.byType(AppButton));
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(AppStrings.validationEmailRequired), findsOneWidget);
+  });
+
   testWidgets('permite mostrar y ocultar la contraseña', (tester) async {
     await pumpLogin(tester);
 
@@ -91,14 +109,80 @@ void main() {
     expect(viewModel.currentUser?.email, 'vecino@ejemplo.com');
   });
 
-  testWidgets('muestra un error claro si faltan datos', (tester) async {
+  testWidgets('muestra errores claros cuando los campos están vacíos', (
+    tester,
+  ) async {
     await pumpLogin(tester);
 
     await tester.tap(find.byType(AppButton));
     await tester.pump();
 
-    expect(find.text(AppStrings.authMissingCredentials), findsOneWidget);
+    expect(find.text(AppStrings.validationEmailRequired), findsOneWidget);
+    expect(find.text(AppStrings.validationPasswordRequired), findsOneWidget);
+    expect(find.text(AppStrings.authMissingCredentials), findsNothing);
     expect(repository.signInCalls, 0);
+
+    final TextField email = tester.widget<TextField>(
+      find.byType(TextField).at(0),
+    );
+    expect(email.focusNode?.hasFocus, isTrue);
+  });
+
+  testWidgets('rechaza un correo con formato inválido', (tester) async {
+    await pumpLogin(tester);
+    await tester.enterText(find.byType(TextField).at(0), 'correo');
+    await tester.enterText(find.byType(TextField).at(1), 'Clave123!');
+
+    await tester.tap(find.byType(AppButton));
+    await tester.pump();
+
+    expect(find.text(AppStrings.validationEmailInvalid), findsOneWidget);
+    expect(find.text(AppStrings.validationPasswordRequired), findsNothing);
+    expect(repository.signInCalls, 0);
+  });
+
+  testWidgets('pide la contraseña cuando el correo es válido', (tester) async {
+    await pumpLogin(tester);
+    await tester.enterText(find.byType(TextField).at(0), 'vecino@ejemplo.com');
+
+    await tester.tap(find.byType(AppButton));
+    await tester.pump();
+
+    expect(find.text(AppStrings.validationEmailRequired), findsNothing);
+    expect(find.text(AppStrings.validationPasswordRequired), findsOneWidget);
+    expect(repository.signInCalls, 0);
+  });
+
+  testWidgets('limpia el error de cada campo al corregirlo', (tester) async {
+    await pumpLogin(tester);
+    await tester.tap(find.byType(AppButton));
+    await tester.pump();
+
+    expect(find.text(AppStrings.validationEmailRequired), findsOneWidget);
+    expect(find.text(AppStrings.validationPasswordRequired), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).at(0), 'vecino@ejemplo.com');
+    await tester.pump();
+
+    expect(find.text(AppStrings.validationEmailRequired), findsNothing);
+    expect(find.text(AppStrings.validationPasswordRequired), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).at(1), 'Clave123!');
+    await tester.pump();
+
+    expect(find.text(AppStrings.validationPasswordRequired), findsNothing);
+    expect(repository.signInCalls, 0);
+  });
+
+  testWidgets('desactiva la autocorrección en el correo', (tester) async {
+    await pumpLogin(tester);
+
+    final TextField email = tester.widget<TextField>(
+      find.byType(TextField).at(0),
+    );
+
+    expect(email.autocorrect, isFalse);
+    expect(email.enableSuggestions, isFalse);
   });
 
   testWidgets('muestra el error de credenciales del ViewModel', (tester) async {
