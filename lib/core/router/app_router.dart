@@ -1,65 +1,87 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import '../errors/not_found_view.dart';
 import '../../features/auth/presentation/views/forgot_password_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
+import '../../features/auth/presentation/views/session_loading_view.dart';
 import '../../features/auth/presentation/views/verify_email_view.dart';
 import '../../features/home/views/home_view.dart';
+import '../../features/moderation/presentation/views/admin_access_denied_view.dart';
+import '../../features/moderation/presentation/views/admin_checking_view.dart';
+import '../../features/moderation/presentation/views/admin_home_view.dart';
 import '../../features/profile/views/profile_view.dart';
 import '../../features/reports/views/my_reports_view.dart';
 import '../../features/reports/views/new_leak_report_view.dart';
 import '../../features/reports/views/new_pet_report_view.dart';
 import '../../features/reports/views/report_detail_view.dart';
+import '../errors/not_found_view.dart';
+import 'route_guards.dart';
 
-/// Construye el router con la guarda de sesión y de correo verificado.
+/// Construye el router único de VeciApp.
 ///
-/// La restricción por roles se agrega en S07. Mientras el correo no esté
-/// confirmado, el usuario solo puede ver la pantalla de verificación.
+/// La app de vecinos y el panel de administración comparten sesión, tema y
+/// navegación. [resolveAppRedirect] concentra las reglas de sesión, correo y
+/// rol para poder probarlas sin levantar la interfaz.
 GoRouter createAppRouter(AuthViewModel authViewModel) {
-  // Rutas accesibles sin sesión.
-  const Set<String> publicRoutes = <String>{
-    '/login',
-    '/register',
-    '/forgot-password',
-  };
-  const String verifyEmailRoute = '/verify-email';
-
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: AppRoutes.login,
     refreshListenable: authViewModel,
     redirect: (context, state) {
-      final bool isLoggedIn = authViewModel.isAuthenticated;
-      final bool isPublicRoute = publicRoutes.contains(state.matchedLocation);
-      final bool isVerifyEmailRoute = state.matchedLocation == verifyEmailRoute;
-
-      if (!isLoggedIn) {
-        return isPublicRoute ? null : '/login';
-      }
-      if (!authViewModel.isEmailVerified) {
-        return isVerifyEmailRoute ? null : verifyEmailRoute;
-      }
-      if (isPublicRoute || isVerifyEmailRoute) {
-        return '/';
-      }
-      return null;
+      return resolveAppRedirect(
+        location: state.matchedLocation,
+        isLoggedIn: authViewModel.isAuthenticated,
+        isEmailVerified: authViewModel.isEmailVerified,
+        isRoleLoading: authViewModel.isRoleLoading,
+        role: authViewModel.currentUser?.role,
+      );
     },
     routes: <RouteBase>[
-      GoRoute(path: '/login', builder: (context, state) => const LoginView()),
       GoRoute(
-        path: '/register',
+        path: AppRoutes.login,
+        builder: (context, state) => const LoginView(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
         builder: (context, state) => const RegisterView(),
       ),
       GoRoute(
-        path: verifyEmailRoute,
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordView(),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyEmail,
         builder: (context, state) => const VerifyEmailView(),
       ),
       GoRoute(
-        path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordView(),
+        path: AppRoutes.sessionLoading,
+        builder: (context, state) => const SessionLoadingView(),
       ),
-      GoRoute(path: '/', builder: (context, state) => const HomeView()),
+      GoRoute(
+        path: AppRoutes.adminLogin,
+        builder: (context, state) => const LoginView(adminMode: true),
+      ),
+      GoRoute(
+        path: AppRoutes.adminForgotPassword,
+        builder: (context, state) =>
+            const ForgotPasswordView(backRoute: AppRoutes.adminLogin),
+      ),
+      GoRoute(
+        path: AppRoutes.adminChecking,
+        builder: (context, state) => const AdminCheckingView(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminDenied,
+        builder: (context, state) => const AdminAccessDeniedView(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminHome,
+        builder: (context, state) => const AdminHomeView(),
+      ),
+      GoRoute(
+        path: AppRoutes.home,
+        builder: (context, state) => const HomeView(),
+      ),
       GoRoute(
         path: '/my-reports',
         builder: (context, state) => const MyReportsView(),

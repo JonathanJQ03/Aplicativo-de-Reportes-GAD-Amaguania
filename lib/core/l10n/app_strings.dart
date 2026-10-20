@@ -31,6 +31,8 @@ abstract final class AppStrings {
   static const String loginForgotPassword = '¿Olvidaste tu contraseña?';
   static const String loginNoAccount = '¿No tienes cuenta?';
   static const String loginGoToRegister = 'Regístrate';
+  static const String loginAdminAccess = 'Administrador';
+  static const String loginBack = 'Volver';
 
   // Registro.
   static const String registerScreenTitle = 'Registro de vecino';
@@ -229,11 +231,13 @@ abstract final class AppStrings {
       'Ingresa con tu cuenta de funcionario del GAD de Amaguaña.';
   static const String adminLoginSupport =
       'Usa el correo y la contraseña asignados por el GAD.';
+  static const String sessionChecking = 'Comprobando tu sesión...';
   static const String adminCheckingAccess = 'Comprobando tus permisos...';
   static const String adminAccessDeniedTitle = 'Acceso restringido';
   static const String adminAccessDeniedBody =
       'Esta sección es exclusiva para el personal autorizado del GAD de '
       'Amaguaña. Tu cuenta no tiene permisos de administrador.';
+  static const String adminBackToApp = 'Volver a la app';
   static const String adminPanelPreparingTitle = 'Panel en preparación';
   static const String adminPanelPreparingBody =
       'Tu cuenta tiene acceso de administrador. La bandeja de reportes y la '

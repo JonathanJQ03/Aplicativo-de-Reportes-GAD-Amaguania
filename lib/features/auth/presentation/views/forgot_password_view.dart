@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/router/route_guards.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -18,7 +19,13 @@ import '../viewmodels/auth_viewmodel.dart';
 /// El enlace lo envía Firebase al correo registrado y el usuario crea la nueva
 /// contraseña en el navegador. La app no muestra si el correo existe.
 class ForgotPasswordView extends StatefulWidget {
-  const ForgotPasswordView({super.key});
+  const ForgotPasswordView({super.key, this.backRoute = AppRoutes.login});
+
+  /// Ruta a la que vuelve el botón de regreso.
+  ///
+  /// El login de administración usa [AppRoutes.adminLogin] para no llevar al
+  /// usuario al login de vecinos.
+  final String backRoute;
 
   @override
   State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
@@ -80,7 +87,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   }
 
   void _goToLogin() {
-    context.go('/login');
+    context.go(widget.backRoute);
   }
 
   @override

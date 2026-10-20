@@ -207,17 +207,20 @@ La app lee ese campo después de iniciar sesión. Si el documento no existe o la
 lectura falla, usa `vecino`. El cliente no puede escribir un rol distinto de
 `vecino`; las reglas bloquean el cambio.
 
-El panel de administración se ejecuta con:
+El panel se abre desde la acción **Administrador** de la pantalla de login. La
+app es única:
 
 ```bash
-flutter run -t lib/main_admin.dart \
+flutter run -t lib/main_vecino.dart \
   --dart-define=FIREBASE_EMULATOR_HOST=localhost
 ```
 
-Un vecino autenticado termina en **Acceso restringido** y un administrador en
-el marcador **Panel en preparación**. La plataforma web y el layout definitivo
-llegan en S15. En S07 el panel se probó en el teléfono de desarrollo; el guard
-es independiente de la plataforma.
+Un vecino autenticado que entra por ese acceso termina en **Acceso restringido**
+y puede volver a la app; un administrador llega al marcador **Panel en
+preparación**. `lib/main_admin.dart` sigue existiendo como alias de
+`lib/main_vecino.dart` para comandos antiguos, pero no genera una app aparte. La
+plataforma web y el layout definitivo llegan en S15. En S07 el panel se probó en
+el teléfono de desarrollo; el guard es independiente de la plataforma.
 
 Consulta la matriz de reglas y el seed del administrador en
 [`roles-y-acceso.md`](roles-y-acceso.md).

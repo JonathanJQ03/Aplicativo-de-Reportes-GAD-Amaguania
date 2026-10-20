@@ -40,39 +40,52 @@ Mientras el rol no se conoce, `isAdmin` es `false`. El panel espera en una
 pantalla de comprobación en lugar de mostrar el contenido o negar el acceso por
 anticipación.
 
-## 2. Panel de administración
+## 2. Acceso de administración dentro de la app única
 
-`lib/main_admin.dart` arranca `AdminApp`, que usa `createAdminRouter` y el mismo
-`AuthViewModel` de la app móvil.
+VeciApp es **una sola aplicación**. El login de vecinos muestra la acción
+**Administrador** arriba a la derecha; al pulsarla se abre `/admin/login`. El
+mismo `LoginView` se reutiliza en modo administrador, sin enlace de registro y
+con una acción **Volver** al login normal.
 
-Rutas:
+El router único vive en `lib/core/router/app_router.dart`:
 
 | Ruta | Contenido |
 |---|---|
-| `/login` | Login del personal del GAD, sin enlace de registro. |
-| `/forgot-password` | Recuperación de contraseña existente. |
-| `/checking` | Espera mientras se consulta el rol. |
-| `/access-denied` | Cuenta autenticada sin rol de administrador. |
-| `/` | Marcador del panel; el layout real llega en S15. |
+| `/login` | Login de vecinos; acceso de administrador arriba a la derecha. |
+| `/admin/login` | Login del personal del GAD, sin enlace de registro. |
+| `/admin/forgot-password` | Recuperación; al volver regresa al login del GAD. |
+| `/session-loading` | Espera mientras se consulta el rol de la app de vecinos. |
+| `/admin/checking` | Espera mientras se consulta el rol en el área de administración. |
+| `/admin/denied` | Cuenta autenticada sin rol de administrador. |
+| `/admin` | Marcador del panel; el layout real llega en S15. |
 
-Reglas del guard:
+Reglas del guard (`resolveAppRedirect`):
 
-1. Sin sesión solo se permite `/login` y `/forgot-password`.
-2. Con sesión pero sin rol resuelto, se muestra `/checking`.
-3. Solo `administrador` entra a `/`.
-4. `vecino` y `vecinoVerificado` terminan en `/access-denied`.
-5. Al cerrar sesión se vuelve a `/login`.
+1. Sin sesión solo se permiten las rutas públicas. El área `/admin` lleva a
+   `/admin/login`; el resto, a `/login`.
+2. Con sesión pero sin rol resuelto, se muestra `/session-loading` o
+   `/admin/checking` según el área.
+3. Un `administrador` aterriza en `/admin` después de iniciar sesión, aunque su
+   correo todavía no esté verificado. Las cuentas las provisiona el GAD.
+4. `vecino` y `vecinoVerificado` no entran a `/admin`; terminan en
+   `/admin/denied`. Desde ahí pueden usar **Volver a la app** o **Cerrar
+   sesión**.
+5. Al cerrar sesión desde el área de administración se vuelve a
+   `/admin/login`.
 
 La lógica está en `lib/core/router/route_guards.dart` y tiene pruebas unitarias
-para toda la matriz.
+para toda la matriz. `lib/features/moderation/presentation/views/` contiene las
+pantallas de comprobación, acceso restringido y el marcador del panel.
 
 ### Alcance de S07
 
 - El guard y las reglas son independientes de la plataforma.
 - **La entrada web con `web/` se habilitará en S15.** En S07 el panel se
-  verificó ejecutando `lib/main_admin.dart` en el teléfono de desarrollo; el
-  mismo código servirá para la web cuando se agregue esa plataforma.
+  verificó dentro de la app Android; el mismo router servirá para la web cuando
+  se agregue esa plataforma.
 - El layout lateral, la bandeja y la moderación son de S15.
+- `lib/main_admin.dart` se conserva como alias de `lib/main_vecino.dart` para
+  comandos y documentación antiguos. No crea una segunda app ni un segundo APK.
 - La verificación de correo del vecino (S05) no se evalúa en el panel. Las
   cuentas de administrador las crea el GAD y se revisan antes de entregarlas.
   Cuando exista la verificación real, conviene exigir también el correo
