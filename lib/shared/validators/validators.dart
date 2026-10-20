@@ -73,9 +73,10 @@ abstract final class AppValidators {
     return null;
   }
 
-  /// Valida el formato básico de una cédula ecuatoriana.
+  /// Valida el formato y el algoritmo de una cédula ecuatoriana.
   ///
-  /// TODO(S04): validar el algoritmo módulo 10 y detectar cédulas duplicadas.
+  /// La detección de cédulas duplicadas se resolverá con un mecanismo del lado
+  /// del servidor; no se consulta la cédula de otros vecinos desde el cliente.
   static String? cedula(String? value) {
     final String? requiredMessage = required(
       value,
@@ -89,6 +90,9 @@ abstract final class AppValidators {
     if (cedula.length != CedulaValidator.cedulaLength ||
         !_digitsPattern.hasMatch(cedula)) {
       return AppStrings.validationCedulaFormat;
+    }
+    if (!CedulaValidator.isValid(cedula)) {
+      return AppStrings.validationCedulaInvalid;
     }
     return null;
   }

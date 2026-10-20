@@ -39,7 +39,7 @@ abstract final class AppStrings {
   static const String lastNameLabel = 'Apellidos';
   static const String lastNameHint = 'Ej.: Pérez Gómez';
   static const String cedulaLabel = 'Cédula';
-  static const String cedulaHint = 'Ej.: 1712345678';
+  static const String cedulaHint = 'Ej.: 1710034065';
   static const String phoneLabel = 'Teléfono (opcional)';
   static const String phoneHint = 'Ej.: 0991234567';
   static const String registerPasswordHelper =
@@ -62,6 +62,8 @@ abstract final class AppStrings {
   static const String validationCedulaRequired = 'Escribe tu cédula.';
   static const String validationCedulaFormat =
       'La cédula debe tener 10 números, sin espacios.';
+  static const String validationCedulaInvalid =
+      'La cédula no es válida. Revísala e intenta de nuevo.';
   static const String validationPhoneInvalid =
       'Escribe un teléfono de 10 números, por ejemplo 0991234567.';
   static const String validationPasswordMinLength =

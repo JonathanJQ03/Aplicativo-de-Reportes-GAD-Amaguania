@@ -120,7 +120,7 @@ void main() {
       final bool result = await viewModel.signUp(
         nombres: 'María Fernanda',
         apellidos: 'Pérez Gómez',
-        cedula: '1712345678',
+        cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         phone: '0991234567',
         password: 'Vecino123!',
@@ -130,7 +130,7 @@ void main() {
       expect(repository.signUpCalls, 1);
       expect(repository.lastSignUp?.nombres, 'María Fernanda');
       expect(repository.lastSignUp?.apellidos, 'Pérez Gómez');
-      expect(repository.lastSignUp?.cedula, '1712345678');
+      expect(repository.lastSignUp?.cedula, '1710034065');
       expect(repository.lastSignUp?.email, 'vecino@ejemplo.com');
       expect(repository.lastSignUp?.phone, '0991234567');
       expect(viewModel.isAuthenticated, isTrue);
@@ -144,7 +144,7 @@ void main() {
       final bool result = await viewModel.signUp(
         nombres: '',
         apellidos: 'Pérez',
-        cedula: '1712345678',
+        cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
       );
@@ -162,7 +162,7 @@ void main() {
       final bool result = await viewModel.signUp(
         nombres: 'María',
         apellidos: 'Pérez',
-        cedula: '1712345678',
+        cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
       );
@@ -181,7 +181,7 @@ void main() {
       final bool result = await viewModel.signUp(
         nombres: 'María',
         apellidos: 'Pérez',
-        cedula: '1712345678',
+        cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
       );
@@ -196,7 +196,7 @@ void main() {
       final Future<bool> pending = viewModel.signUp(
         nombres: 'María',
         apellidos: 'Pérez',
-        cedula: '1712345678',
+        cedula: '1710034065',
         email: 'vecino@ejemplo.com',
         password: 'Vecino123!',
       );

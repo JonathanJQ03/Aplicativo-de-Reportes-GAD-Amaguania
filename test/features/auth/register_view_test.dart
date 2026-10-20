@@ -58,7 +58,7 @@ void main() {
   }) async {
     await tester.enterText(find.byType(TextField).at(0), 'María Fernanda');
     await tester.enterText(find.byType(TextField).at(1), 'Pérez Gómez');
-    await tester.enterText(find.byType(TextField).at(2), '1712345678');
+    await tester.enterText(find.byType(TextField).at(2), '1710034065');
     await tester.enterText(find.byType(TextField).at(3), 'vecino@ejemplo.com');
     await tester.enterText(find.byType(TextField).at(4), phone);
     await tester.enterText(find.byType(TextField).at(5), password);
@@ -144,6 +144,23 @@ void main() {
     expect(repository.signUpCalls, 0);
   });
 
+  testWidgets('rechaza una cédula con dígito verificador incorrecto', (
+    tester,
+  ) async {
+    await pumpRegister(tester);
+    await tester.enterText(find.byType(TextField).at(0), 'María');
+    await tester.enterText(find.byType(TextField).at(1), 'Pérez');
+    await tester.enterText(find.byType(TextField).at(2), '1710034066');
+    await tester.enterText(find.byType(TextField).at(3), 'vecino@ejemplo.com');
+    await tester.enterText(find.byType(TextField).at(4), '0991234567');
+    await tester.enterText(find.byType(TextField).at(5), 'Vecino123!');
+
+    await tapRegister(tester);
+
+    expect(find.text(AppStrings.validationCedulaInvalid), findsOneWidget);
+    expect(repository.signUpCalls, 0);
+  });
+
   testWidgets('rechaza una contraseña sin símbolo', (tester) async {
     await pumpRegister(tester);
     await fillValidForm(tester, password: 'Vecino123');
@@ -164,7 +181,7 @@ void main() {
     expect(repository.signUpCalls, 1);
     expect(repository.lastSignUp?.nombres, 'María Fernanda');
     expect(repository.lastSignUp?.apellidos, 'Pérez Gómez');
-    expect(repository.lastSignUp?.cedula, '1712345678');
+    expect(repository.lastSignUp?.cedula, '1710034065');
     expect(repository.lastSignUp?.email, 'vecino@ejemplo.com');
     expect(repository.lastSignUp?.phone, '0991234567');
     expect(viewModel.isAuthenticated, isTrue);
@@ -187,7 +204,7 @@ void main() {
     await pumpRegister(tester);
     await tester.enterText(find.byType(TextField).at(0), '  María  ');
     await tester.enterText(find.byType(TextField).at(1), '  Pérez  ');
-    await tester.enterText(find.byType(TextField).at(2), '1712345678');
+    await tester.enterText(find.byType(TextField).at(2), '1710034065');
     await tester.enterText(
       find.byType(TextField).at(3),
       ' vecino@ejemplo.com ',

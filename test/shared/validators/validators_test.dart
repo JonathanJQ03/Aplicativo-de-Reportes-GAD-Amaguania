@@ -144,8 +144,33 @@ void main() {
       }
     });
 
-    test('acepta 10 dígitos; el algoritmo se valida en S04', () {
-      expect(AppValidators.cedula('1712345678'), isNull);
+    test('rechaza cédulas de 10 dígitos con algoritmo inválido', () {
+      for (final String value in <String>[
+        '1710034066',
+        '1760034064',
+        '0010034064',
+        '2510034065',
+      ]) {
+        expect(
+          AppValidators.cedula(value),
+          AppStrings.validationCedulaInvalid,
+          reason: 'Debería rechazar "$value"',
+        );
+      }
+    });
+
+    test('acepta cédulas ecuatorianas válidas', () {
+      for (final String value in <String>[
+        '1710034065',
+        '0102030400',
+        ' 1710034065 ',
+      ]) {
+        expect(
+          AppValidators.cedula(value),
+          isNull,
+          reason: 'Debería aceptar "$value"',
+        );
+      }
     });
   });
 
