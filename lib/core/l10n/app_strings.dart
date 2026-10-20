@@ -1,3 +1,5 @@
+import '../constants/app_constants.dart';
+
 /// Textos visibles de la aplicación, en español.
 ///
 /// Todo texto que vea el usuario vive aquí. Los widgets no deben declarar
@@ -26,6 +28,7 @@ abstract final class AppStrings {
   static const String signIn = 'Ingresar';
   static const String loginSupport =
       'Usa el correo y la contraseña con los que te registraste.';
+  static const String loginForgotPassword = '¿Olvidaste tu contraseña?';
   static const String loginNoAccount = '¿No tienes cuenta?';
   static const String loginGoToRegister = 'Regístrate';
 
@@ -48,6 +51,56 @@ abstract final class AppStrings {
   static const String registerHaveAccount = '¿Ya tienes una cuenta?';
   static const String registerGoToLogin = 'Inicia sesión';
   static const String backToLogin = 'Volver al inicio de sesión';
+
+  // Aviso de privacidad y consentimiento LOPDP (S06).
+  static const String privacyNoticeTitle = 'Aviso de privacidad';
+  static const String privacyNoticeVersionLabel =
+      'Versión ${AppConstants.privacyNoticeVersion}';
+  static const String privacyNoticeBody =
+      'El Gobierno Autónomo Descentralizado de Amaguaña (GAD) es responsable '
+      'del tratamiento de tus datos personales.\n\n'
+      '¿Para qué usamos tus datos?\n'
+      'Para crear y administrar tu cuenta, verificar tu identidad y '
+      'residencia, recibir y moderar tus reportes de fugas de agua y '
+      'mascotas, enviarte notificaciones sobre tus reportes y atender tus '
+      'solicitudes.\n\n'
+      '¿Qué datos tratamos?\n'
+      'Nombres, apellidos, cédula, correo electrónico, teléfono opcional, '
+      'sector, fotografías, ubicación de los reportes y los datos necesarios '
+      'para brindarte el servicio.\n\n'
+      '¿Con quién los compartimos?\n'
+      'No publicamos tu cédula, correo ni teléfono en la comunidad. Los datos '
+      'sensibles y las planillas de servicios básicos solo los consulta el '
+      'personal autorizado del GAD. No vendemos tus datos.\n\n'
+      '¿Cuánto tiempo los conservamos?\n'
+      'Mientras tu cuenta esté activa y durante los plazos que exija la ley. '
+      'Después se eliminan o se anonimizan.\n\n'
+      'Tus derechos\n'
+      'Puedes solicitar acceso, rectificación, eliminación, oposición o '
+      'portabilidad de tus datos, y retirar este consentimiento, por los '
+      'canales oficiales del GAD. Si retiras el consentimiento, no podremos '
+      'mantener tu cuenta activa.\n\n'
+      'Al marcar la casilla declaras que leíste este aviso y aceptas de forma '
+      'libre, informada y expresa el tratamiento de tus datos para los fines '
+      'descritos. La fecha y hora de tu aceptación quedarán registradas.';
+  static const String privacyConsentLabel =
+      'Acepto el aviso de privacidad y el tratamiento de mis datos '
+      'personales.';
+  static const String privacyConsentRequired =
+      'Debes aceptar el aviso de privacidad para crear tu cuenta.';
+  static const String privacyNoticeOpen = 'Leer aviso de privacidad';
+  static const String privacyNoticeClose = 'Entendido';
+
+  // Recuperación de contraseña (S06).
+  static const String forgotPasswordHeading = 'Recupera tu contraseña';
+  static const String forgotPasswordBody =
+      'Escribe el correo con el que te registraste. Te enviaremos un enlace '
+      'para crear una nueva contraseña.';
+  static const String forgotPasswordButton = 'Enviar enlace';
+  static const String forgotPasswordSent =
+      'Si el correo está registrado, recibirás un enlace para crear una nueva '
+      'contraseña. Revisa también la carpeta de spam.';
+  static const String forgotPasswordBack = 'Volver al inicio de sesión';
 
   // Verificación del correo.
   static const String verifyEmailScreenTitle = 'Verifica tu correo';
@@ -158,6 +211,10 @@ abstract final class AppStrings {
       'No pudimos crear tu cuenta. Intenta de nuevo en unos momentos.';
   static const String authMissingRegistrationData =
       'Completa todos los campos obligatorios.';
+  static const String authConsentRequired =
+      'Debes aceptar el aviso de privacidad para crear tu cuenta.';
+  static const String authPasswordResetFailed =
+      'No pudimos enviar el enlace. Revisa tu conexión e intenta de nuevo.';
   static const String authRequiresRecentLogin =
       'Por seguridad, cierra sesión y vuelve a entrar para cambiar el correo.';
   static const String authVerificationEmailFailed =

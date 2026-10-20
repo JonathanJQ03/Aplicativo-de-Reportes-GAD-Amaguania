@@ -54,6 +54,7 @@ class AuthViewModel extends ChangeNotifier {
   String? _errorMessage;
   String? _infoMessage;
   String? _pendingEmail;
+  bool _passwordResetSent = false;
   bool _developmentEmailVerified = false;
   Timer? _developmentVerificationTimer;
   bool _disposed = false;
@@ -68,6 +69,7 @@ class AuthViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get infoMessage => _infoMessage;
   String? get pendingEmail => _pendingEmail;
+  bool get passwordResetSent => _passwordResetSent;
 
   /// Inicia sesión y devuelve `true` si la sesión quedó abierta.
   Future<bool> signIn({required String email, required String password}) async {
@@ -93,6 +95,7 @@ class AuthViewModel extends ChangeNotifier {
       _applyUser(user);
       _infoMessage = null;
       _pendingEmail = null;
+      _passwordResetSent = false;
       return true;
     } on AuthFailure catch (failure) {
       _errorMessage = _messageFor(failure.reason);
@@ -116,6 +119,7 @@ class AuthViewModel extends ChangeNotifier {
     required String email,
     String? phone,
     required String password,
+    required bool consentAccepted,
   }) async {
     if (_isLoading) {
       return false;
@@ -131,8 +135,15 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     }
 
+    if (!consentAccepted) {
+      _errorMessage = AppStrings.authConsentRequired;
+      _notify();
+      return false;
+    }
+
     _isLoading = true;
     _errorMessage = null;
+    _passwordResetSent = false;
     _notify();
 
     try {
@@ -143,6 +154,7 @@ class AuthViewModel extends ChangeNotifier {
         email: email,
         phone: phone,
         password: password,
+        consentAccepted: consentAccepted,
       );
       _applyUser(user);
       _infoMessage = null;
@@ -174,6 +186,7 @@ class AuthViewModel extends ChangeNotifier {
       await repository.signOut();
       _infoMessage = null;
       _pendingEmail = null;
+      _passwordResetSent = false;
       _applyUser(null);
     } on AuthFailure catch (failure) {
       _errorMessage = _messageFor(failure.reason);
@@ -294,6 +307,54 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  /// Envía un enlace de recuperación al correo indicado.
+  ///
+  /// No revela si la cuenta existe: la pantalla muestra siempre el mismo
+  /// mensaje cuando Firebase acepta la solicitud.
+  Future<bool> requestPasswordReset(String email) async {
+    if (_isLoading) {
+      return false;
+    }
+
+    final String normalizedEmail = email.trim();
+    if (normalizedEmail.isEmpty) {
+      _errorMessage = AppStrings.validationEmailRequired;
+      _passwordResetSent = false;
+      _notify();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    _passwordResetSent = false;
+    _notify();
+
+    try {
+      await repository.sendPasswordResetEmail(normalizedEmail);
+      _passwordResetSent = true;
+      return true;
+    } on AuthFailure catch (failure) {
+      _errorMessage = _messageFor(failure.reason);
+      return false;
+    } catch (_) {
+      _errorMessage = AppStrings.authPasswordResetFailed;
+      return false;
+    } finally {
+      _isLoading = false;
+      _notify();
+    }
+  }
+
+  /// Limpia el resultado anterior de la recuperación al editar el correo.
+  void clearPasswordResetState() {
+    if (!_passwordResetSent && _errorMessage == null) {
+      return;
+    }
+    _passwordResetSent = false;
+    _errorMessage = null;
+    _notify();
+  }
+
   /// Limpia el mensaje de error al corregir los datos.
   void clearError() {
     if (_errorMessage == null) {
@@ -365,6 +426,9 @@ class AuthViewModel extends ChangeNotifier {
       AuthFailureReason.verificationEmailFailed =>
         AppStrings.authVerificationEmailFailed,
       AuthFailureReason.emailChangeFailed => AppStrings.authEmailChangeFailed,
+      AuthFailureReason.consentRequired => AppStrings.authConsentRequired,
+      AuthFailureReason.passwordResetFailed =>
+        AppStrings.authPasswordResetFailed,
       AuthFailureReason.profileCreationFailed =>
         AppStrings.authProfileCreationFailed,
       AuthFailureReason.unknown => AppStrings.authUnexpected,

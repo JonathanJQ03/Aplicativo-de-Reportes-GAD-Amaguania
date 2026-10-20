@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../models/app_user.dart';
 import '../domain/auth_failure.dart';
 import '../domain/auth_repository.dart';
@@ -68,7 +69,12 @@ class FirebaseAuthRepository implements AuthRepository {
     required String email,
     String? phone,
     required String password,
+    required bool consentAccepted,
   }) async {
+    if (!consentAccepted) {
+      throw const AuthFailure(AuthFailureReason.consentRequired);
+    }
+
     User? user;
     try {
       final UserCredential credential = await _auth
@@ -144,6 +150,10 @@ class FirebaseAuthRepository implements AuthRepository {
       'cedula': cedula,
       'email': email,
       'createdAt': FieldValue.serverTimestamp(),
+      // RF-06: la aceptación se registra con hora del servidor para no
+      // depender del reloj del teléfono.
+      'consentVersion': AppConstants.privacyNoticeVersion,
+      'consentAcceptedAt': FieldValue.serverTimestamp(),
     };
     if (phone != null && phone.isNotEmpty) {
       privateData['phone'] = phone;
@@ -246,6 +256,29 @@ class FirebaseAuthRepository implements AuthRepository {
         isChange
             ? AuthFailureReason.emailChangeFailed
             : AuthFailureReason.verificationEmailFailed,
+    };
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (error) {
+      // No revelar si el correo está registrado. El mensaje de la interfaz es
+      // intencionalmente genérico.
+      if (error.code == 'user-not-found') {
+        return;
+      }
+      throw AuthFailure(_passwordResetFailure(error));
+    }
+  }
+
+  AuthFailureReason _passwordResetFailure(FirebaseAuthException error) {
+    return switch (error.code) {
+      'too-many-requests' => AuthFailureReason.tooManyRequests,
+      'network-request-failed' => AuthFailureReason.network,
+      'operation-not-allowed' => AuthFailureReason.notAllowed,
+      _ => AuthFailureReason.passwordResetFailed,
     };
   }
 

@@ -14,7 +14,12 @@ service cloud.firestore {
 
     match /users_private/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
-      allow create: if request.auth != null && request.auth.uid == uid;
+      // RF-06: todo perfil nuevo debe registrar la aceptación del aviso de
+      // privacidad con la hora del servidor y la versión del texto aceptado.
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.consentAcceptedAt is timestamp
+        && request.resource.data.consentVersion is string;
       // S05 permite cambiar únicamente el correo privado cuando el dueño ya
       // verificó el nuevo correo en Firebase Auth. El resto de campos queda
       // inmutable desde el cliente.

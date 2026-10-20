@@ -196,6 +196,10 @@ void main() {
     await tester.enterText(find.byType(TextField).at(3), 'vecino@ejemplo.com');
     await tester.enterText(find.byType(TextField).at(4), '0991234567');
     await tester.enterText(find.byType(TextField).at(5), 'Vecino123!');
+    final Finder consent = find.byType(Checkbox);
+    await tester.ensureVisible(consent);
+    await tester.tap(consent);
+    await tester.pump();
 
     final Finder registerButton = find.widgetWithText(
       AppButton,

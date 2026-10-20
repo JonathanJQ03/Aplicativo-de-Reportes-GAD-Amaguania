@@ -51,10 +51,22 @@ void main() {
     await tester.pump();
   }
 
+  Future<void> setConsent(WidgetTester tester, {required bool accepted}) async {
+    final Finder checkboxFinder = find.byType(Checkbox);
+    final Checkbox checkbox = tester.widget<Checkbox>(checkboxFinder);
+    if (checkbox.value == accepted) {
+      return;
+    }
+    await tester.ensureVisible(checkboxFinder);
+    await tester.tap(checkboxFinder);
+    await tester.pump();
+  }
+
   Future<void> fillValidForm(
     WidgetTester tester, {
     String phone = '0991234567',
     String password = 'Vecino123!',
+    bool acceptConsent = true,
   }) async {
     await tester.enterText(find.byType(TextField).at(0), 'María Fernanda');
     await tester.enterText(find.byType(TextField).at(1), 'Pérez Gómez');
@@ -62,6 +74,7 @@ void main() {
     await tester.enterText(find.byType(TextField).at(3), 'vecino@ejemplo.com');
     await tester.enterText(find.byType(TextField).at(4), phone);
     await tester.enterText(find.byType(TextField).at(5), password);
+    await setConsent(tester, accepted: acceptConsent);
   }
 
   testWidgets('muestra los campos y la acción principal', (tester) async {
@@ -75,10 +88,44 @@ void main() {
     expect(find.text(AppStrings.phoneLabel), findsOneWidget);
     expect(find.text(AppStrings.passwordLabel), findsOneWidget);
     expect(find.text(AppStrings.registerPasswordHelper), findsOneWidget);
+    expect(find.text(AppStrings.privacyConsentLabel), findsOneWidget);
+    expect(find.text(AppStrings.privacyNoticeOpen), findsOneWidget);
     expect(
       find.widgetWithText(AppButton, AppStrings.registerButton),
       findsOneWidget,
     );
+  });
+
+  testWidgets('no crea la cuenta sin aceptar el aviso de privacidad', (
+    tester,
+  ) async {
+    await pumpRegister(tester);
+    await fillValidForm(tester, acceptConsent: false);
+
+    await tapRegister(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.privacyConsentRequired), findsOneWidget);
+    expect(repository.signUpCalls, 0);
+    expect(viewModel.isAuthenticated, isFalse);
+  });
+
+  testWidgets('abre el aviso de privacidad completo', (tester) async {
+    await pumpRegister(tester);
+
+    final Finder noticeLink = find.text(AppStrings.privacyNoticeOpen);
+    await tester.ensureVisible(noticeLink);
+    await tester.tap(noticeLink);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.privacyNoticeTitle), findsOneWidget);
+    expect(find.text(AppStrings.privacyNoticeVersionLabel), findsOneWidget);
+    expect(find.textContaining('responsable del tratamiento'), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.privacyNoticeClose));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.privacyNoticeTitle), findsNothing);
   });
 
   testWidgets('no se desborda en una pantalla pequeña', (tester) async {
@@ -184,6 +231,7 @@ void main() {
     expect(repository.lastSignUp?.cedula, '1710034065');
     expect(repository.lastSignUp?.email, 'vecino@ejemplo.com');
     expect(repository.lastSignUp?.phone, '0991234567');
+    expect(repository.lastSignUp?.consentAccepted, isTrue);
     expect(viewModel.isAuthenticated, isTrue);
     expect(viewModel.currentUser?.role, UserRole.vecino);
   });
@@ -211,6 +259,7 @@ void main() {
     );
     await tester.enterText(find.byType(TextField).at(4), '0991234567');
     await tester.enterText(find.byType(TextField).at(5), 'Vecino123!');
+    await setConsent(tester, accepted: true);
 
     await tapRegister(tester);
     await tester.pumpAndSettle();
