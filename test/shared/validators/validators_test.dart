@@ -71,4 +71,152 @@ void main() {
       expect(AppValidators.loginPassword('Clave123!'), isNull);
     });
   });
+
+  group('AppValidators.name', () {
+    test('exige el mensaje específico del campo', () {
+      expect(
+        AppValidators.name(
+          null,
+          requiredMessage: AppStrings.validationFirstNameRequired,
+        ),
+        AppStrings.validationFirstNameRequired,
+      );
+      expect(
+        AppValidators.name(
+          '   ',
+          requiredMessage: AppStrings.validationLastNameRequired,
+        ),
+        AppStrings.validationLastNameRequired,
+      );
+    });
+
+    test('rechaza nombres con números, símbolos o demasiado cortos', () {
+      for (final String value in <String>['María2', 'Pérez@', 'A']) {
+        expect(
+          AppValidators.name(
+            value,
+            requiredMessage: AppStrings.validationFirstNameRequired,
+          ),
+          AppStrings.validationNameInvalid,
+          reason: 'Debería rechazar "$value"',
+        );
+      }
+    });
+
+    test('acepta tildes, espacios, apóstrofes y guiones', () {
+      for (final String value in <String>[
+        'María Fernanda',
+        "O'Connor",
+        'Pérez-Gómez',
+        '  Ana  María  ',
+      ]) {
+        expect(
+          AppValidators.name(
+            value,
+            requiredMessage: AppStrings.validationFirstNameRequired,
+          ),
+          isNull,
+          reason: 'Debería aceptar "$value"',
+        );
+      }
+    });
+  });
+
+  group('AppValidators.cedula', () {
+    test('exige la cédula cuando está vacía', () {
+      expect(AppValidators.cedula(null), AppStrings.validationCedulaRequired);
+      expect(AppValidators.cedula('   '), AppStrings.validationCedulaRequired);
+    });
+
+    test('rechaza valores que no tienen 10 dígitos', () {
+      for (final String value in <String>[
+        '123456789',
+        '12345678901',
+        '17123456a8',
+        '1712 45678',
+        'abcdefghij',
+      ]) {
+        expect(
+          AppValidators.cedula(value),
+          AppStrings.validationCedulaFormat,
+          reason: 'Debería rechazar "$value"',
+        );
+      }
+    });
+
+    test('acepta 10 dígitos; el algoritmo se valida en S04', () {
+      expect(AppValidators.cedula('1712345678'), isNull);
+    });
+  });
+
+  group('AppValidators.phoneOptional', () {
+    test('acepta vacío porque el teléfono es opcional', () {
+      expect(AppValidators.phoneOptional(null), isNull);
+      expect(AppValidators.phoneOptional(''), isNull);
+      expect(AppValidators.phoneOptional('   '), isNull);
+    });
+
+    test('rechaza teléfonos con formato inválido', () {
+      for (final String value in <String>[
+        '099123456',
+        '09912345678',
+        '0812345678',
+        '09912345a7',
+        '099 123 4567',
+      ]) {
+        expect(
+          AppValidators.phoneOptional(value),
+          AppStrings.validationPhoneInvalid,
+          reason: 'Debería rechazar "$value"',
+        );
+      }
+    });
+
+    test('acepta un celular ecuatoriano de 10 dígitos', () {
+      expect(AppValidators.phoneOptional('0991234567'), isNull);
+    });
+  });
+
+  group('AppValidators.newPassword', () {
+    test('exige la contraseña cuando está vacía', () {
+      expect(
+        AppValidators.newPassword(null),
+        AppStrings.validationPasswordRequired,
+      );
+      expect(
+        AppValidators.newPassword('   '),
+        AppStrings.validationPasswordRequired,
+      );
+    });
+
+    test('exige al menos 8 caracteres', () {
+      expect(
+        AppValidators.newPassword('Abc1!'),
+        AppStrings.validationPasswordMinLength,
+      );
+    });
+
+    test('exige mayúscula, minúscula, número y símbolo', () {
+      expect(
+        AppValidators.newPassword('abcdefg1!'),
+        AppStrings.validationPasswordUppercase,
+      );
+      expect(
+        AppValidators.newPassword('ABCDEFG1!'),
+        AppStrings.validationPasswordLowercase,
+      );
+      expect(
+        AppValidators.newPassword('Abcdefgh!'),
+        AppStrings.validationPasswordDigit,
+      );
+      expect(
+        AppValidators.newPassword('Abcdefg1'),
+        AppStrings.validationPasswordSymbol,
+      );
+    });
+
+    test('acepta una contraseña segura', () {
+      expect(AppValidators.newPassword('Vecino123!'), isNull);
+    });
+  });
 }

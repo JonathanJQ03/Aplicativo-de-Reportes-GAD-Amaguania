@@ -26,6 +26,28 @@ abstract final class AppStrings {
   static const String signIn = 'Ingresar';
   static const String loginSupport =
       'Usa el correo y la contraseña con los que te registraste.';
+  static const String loginNoAccount = '¿No tienes cuenta?';
+  static const String loginGoToRegister = 'Regístrate';
+
+  // Registro.
+  static const String registerScreenTitle = 'Registro de vecino';
+  static const String registerTitle = 'Crea tu cuenta';
+  static const String registerSubtitle =
+      'Completa tus datos para reportar en tu parroquia.';
+  static const String firstNameLabel = 'Nombres';
+  static const String firstNameHint = 'Ej.: María Fernanda';
+  static const String lastNameLabel = 'Apellidos';
+  static const String lastNameHint = 'Ej.: Pérez Gómez';
+  static const String cedulaLabel = 'Cédula';
+  static const String cedulaHint = 'Ej.: 1712345678';
+  static const String phoneLabel = 'Teléfono (opcional)';
+  static const String phoneHint = 'Ej.: 0991234567';
+  static const String registerPasswordHelper =
+      'Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.';
+  static const String registerButton = 'Crear cuenta';
+  static const String registerHaveAccount = '¿Ya tienes una cuenta?';
+  static const String registerGoToLogin = 'Inicia sesión';
+  static const String backToLogin = 'Volver al inicio de sesión';
 
   // Validación de formularios.
   static const String validationEmailRequired =
@@ -33,6 +55,24 @@ abstract final class AppStrings {
   static const String validationEmailInvalid =
       'Escribe un correo válido, por ejemplo nombre@correo.com.';
   static const String validationPasswordRequired = 'Escribe tu contraseña.';
+  static const String validationNameInvalid =
+      'Escribe un nombre o apellido válido, solo con letras.';
+  static const String validationFirstNameRequired = 'Escribe tus nombres.';
+  static const String validationLastNameRequired = 'Escribe tus apellidos.';
+  static const String validationCedulaRequired = 'Escribe tu cédula.';
+  static const String validationCedulaFormat =
+      'La cédula debe tener 10 números, sin espacios.';
+  static const String validationPhoneInvalid =
+      'Escribe un teléfono de 10 números, por ejemplo 0991234567.';
+  static const String validationPasswordMinLength =
+      'Usa al menos 8 caracteres.';
+  static const String validationPasswordUppercase =
+      'Agrega al menos una letra mayúscula.';
+  static const String validationPasswordLowercase =
+      'Agrega al menos una letra minúscula.';
+  static const String validationPasswordDigit = 'Agrega al menos un número.';
+  static const String validationPasswordSymbol =
+      'Agrega al menos un símbolo, por ejemplo !, # o \$.';
 
   // Inicio (marcador temporal hasta la sesión S08).
   static const String homeTitle = 'Inicio';
@@ -42,7 +82,6 @@ abstract final class AppStrings {
       'en la siguiente etapa.';
 
   // Títulos de pantallas pendientes de implementar.
-  static const String registerTitle = 'Registro de vecino';
   static const String verifyCodeTitle = 'Verificar código';
   static const String forgotPasswordTitle = 'Recuperar contraseña';
   static const String profileTitle = 'Mi perfil';
@@ -70,6 +109,19 @@ abstract final class AppStrings {
       'No pudimos iniciar sesión. Intenta de nuevo en unos momentos.';
   static const String authUnexpectedSignOut =
       'No pudimos cerrar la sesión. Intenta de nuevo en unos momentos.';
+  static const String authEmailAlreadyInUse =
+      'Ya existe una cuenta con este correo. Inicia sesión o recupera tu '
+      'contraseña.';
+  static const String authWeakPassword =
+      'La contraseña es demasiado débil. Usa mayúscula, minúscula, número '
+      'y símbolo.';
+  static const String authProfileCreationFailed =
+      'No pudimos completar tu registro. Revisa tu conexión e intenta de '
+      'nuevo.';
+  static const String authUnexpectedSignUp =
+      'No pudimos crear tu cuenta. Intenta de nuevo en unos momentos.';
+  static const String authMissingRegistrationData =
+      'Completa todos los campos obligatorios.';
 
   // Panel de administración (stub hasta S15).
   static const String adminPanelTitle = 'Panel de administración';
