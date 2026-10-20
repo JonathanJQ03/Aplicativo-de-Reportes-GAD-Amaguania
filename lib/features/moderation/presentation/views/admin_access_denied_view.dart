@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/router/route_guards.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -95,6 +97,13 @@ class AdminAccessDeniedView extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: AppSpacing.sp5),
+                    AppButton(
+                      label: AppStrings.adminBackToApp,
+                      icon: Icons.home_outlined,
+                      expand: true,
+                      onPressed: () => context.go(AppRoutes.home),
+                    ),
+                    const SizedBox(height: AppSpacing.sp2),
                     AppButton(
                       label: AppStrings.signOut,
                       icon: Icons.logout_rounded,

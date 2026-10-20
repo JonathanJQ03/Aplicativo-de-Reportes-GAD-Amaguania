@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/router/route_guards.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -141,150 +142,196 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenHorizontal,
-              vertical: AppSpacing.sp4,
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sp2,
+                vertical: AppSpacing.sp1,
+              ),
+              child: Row(
+                children: <Widget>[
+                  if (adminMode)
+                    TextButton.icon(
+                      onPressed: () => context.go(AppRoutes.login),
+                      icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                      label: const Text(AppStrings.loginBack),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  const Spacer(),
+                  if (!adminMode)
+                    TextButton.icon(
+                      onPressed: () => context.go(AppRoutes.adminLogin),
+                      icon: const Icon(
+                        Icons.admin_panel_settings_outlined,
+                        size: 20,
+                      ),
+                      label: const Text(AppStrings.loginAdminAccess),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                ],
+              ),
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: AutofillGroup(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Center(
-                      child: ExcludeSemantics(
-                        child: Container(
-                          width: 88,
-                          height: 88,
-                          decoration: const BoxDecoration(
-                            color: AppColors.sky,
-                            shape: BoxShape.circle,
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenHorizontal,
+                    vertical: AppSpacing.sp4,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: AutofillGroup(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Center(
+                            child: ExcludeSemantics(
+                              child: Container(
+                                width: 88,
+                                height: 88,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.sky,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  adminMode
+                                      ? Icons.admin_panel_settings_outlined
+                                      : Icons.water_drop_rounded,
+                                  size: 44,
+                                  color: AppColors.skyStrong,
+                                ),
+                              ),
+                            ),
                           ),
-                          child: Icon(
-                            adminMode
-                                ? Icons.admin_panel_settings_outlined
-                                : Icons.water_drop_rounded,
-                            size: 44,
-                            color: AppColors.skyStrong,
+                          const SizedBox(height: AppSpacing.sp4),
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              adminMode
+                                  ? AppStrings.adminPanelTitle
+                                  : AppStrings.loginGreeting,
+                              style: AppTypography.h1,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sp4),
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        adminMode
-                            ? AppStrings.adminPanelTitle
-                            : AppStrings.loginGreeting,
-                        style: AppTypography.h1,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sp2),
-                    Text(
-                      adminMode
-                          ? AppStrings.adminLoginSubtitle
-                          : AppStrings.loginSubtitle,
-                      style: AppTypography.body.copyWith(
-                        color: AppColors.contentSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.sp5),
-                    if (error != null) ...[
-                      AppBanner(message: error, type: AppBannerType.error),
-                      const SizedBox(height: AppSpacing.sp4),
-                    ],
-                    AppTextField(
-                      controller: _emailController,
-                      focusNode: _emailFocus,
-                      label: AppStrings.emailLabel,
-                      hint: AppStrings.emailHint,
-                      errorText: _emailError,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      onChanged: _onEmailChanged,
-                      onSubmitted: _handleEmailSubmitted,
-                    ),
-                    const SizedBox(height: AppSpacing.sp4),
-                    AppTextField(
-                      controller: _passwordController,
-                      focusNode: _passwordFocus,
-                      label: AppStrings.passwordLabel,
-                      hint: AppStrings.passwordHint,
-                      errorText: _passwordError,
-                      obscureText: true,
-                      textInputAction: TextInputAction.done,
-                      autofillHints: const [AutofillHints.password],
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      onChanged: _onPasswordChanged,
-                      onSubmitted: (_) => _submit(),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => context.go('/forgot-password'),
-                        child: const Text(AppStrings.loginForgotPassword),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sp4),
-                    AppButton(
-                      label: AppStrings.signIn,
-                      size: AppButtonSize.large,
-                      expand: true,
-                      isLoading: auth.isLoading,
-                      onPressed: _submit,
-                    ),
-                    if (!adminMode) ...[
-                      const SizedBox(height: AppSpacing.sp3),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: <Widget>[
+                          const SizedBox(height: AppSpacing.sp2),
                           Text(
-                            AppStrings.loginNoAccount,
+                            adminMode
+                                ? AppStrings.adminLoginSubtitle
+                                : AppStrings.loginSubtitle,
                             style: AppTypography.body.copyWith(
                               color: AppColors.contentSecondary,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                          TextButton(
-                            onPressed: () => context.go('/register'),
-                            child: const Text(AppStrings.loginGoToRegister),
+                          const SizedBox(height: AppSpacing.sp5),
+                          if (error != null) ...[
+                            AppBanner(
+                              message: error,
+                              type: AppBannerType.error,
+                            ),
+                            const SizedBox(height: AppSpacing.sp4),
+                          ],
+                          AppTextField(
+                            controller: _emailController,
+                            focusNode: _emailFocus,
+                            label: AppStrings.emailLabel,
+                            hint: AppStrings.emailHint,
+                            errorText: _emailError,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            onChanged: _onEmailChanged,
+                            onSubmitted: _handleEmailSubmitted,
+                          ),
+                          const SizedBox(height: AppSpacing.sp4),
+                          AppTextField(
+                            controller: _passwordController,
+                            focusNode: _passwordFocus,
+                            label: AppStrings.passwordLabel,
+                            hint: AppStrings.passwordHint,
+                            errorText: _passwordError,
+                            obscureText: true,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            onChanged: _onPasswordChanged,
+                            onSubmitted: (_) => _submit(),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () => context.go(
+                                adminMode
+                                    ? AppRoutes.adminForgotPassword
+                                    : AppRoutes.forgotPassword,
+                              ),
+                              child: const Text(AppStrings.loginForgotPassword),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sp4),
+                          AppButton(
+                            label: AppStrings.signIn,
+                            size: AppButtonSize.large,
+                            expand: true,
+                            isLoading: auth.isLoading,
+                            onPressed: _submit,
+                          ),
+                          if (!adminMode) ...[
+                            const SizedBox(height: AppSpacing.sp3),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  AppStrings.loginNoAccount,
+                                  style: AppTypography.body.copyWith(
+                                    color: AppColors.contentSecondary,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      context.go(AppRoutes.register),
+                                  child: const Text(
+                                    AppStrings.loginGoToRegister,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.sp4),
+                          Text(
+                            adminMode
+                                ? AppStrings.adminLoginSupport
+                                : AppStrings.loginSupport,
+                            style: AppTypography.small.copyWith(
+                              color: AppColors.contentTertiary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.sp5),
+                          Text(
+                            AppStrings.gadName,
+                            style: AppTypography.tiny.copyWith(
+                              color: AppColors.contentTertiary,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
-                    ],
-                    const SizedBox(height: AppSpacing.sp4),
-                    Text(
-                      adminMode
-                          ? AppStrings.adminLoginSupport
-                          : AppStrings.loginSupport,
-                      style: AppTypography.small.copyWith(
-                        color: AppColors.contentTertiary,
-                      ),
-                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppSpacing.sp5),
-                    Text(
-                      AppStrings.gadName,
-                      style: AppTypography.tiny.copyWith(
-                        color: AppColors.contentTertiary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
