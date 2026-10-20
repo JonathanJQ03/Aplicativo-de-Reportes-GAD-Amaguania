@@ -17,17 +17,20 @@ import '../../features/reports/views/report_detail_view.dart';
 /// En S01 la guarda solo distingue entre sesión abierta y cerrada. La
 /// restricción por roles se agrega en S07.
 GoRouter createAppRouter(AuthViewModel authViewModel) {
+  // Rutas accesibles sin sesión. S06 agregará '/forgot-password'.
+  const Set<String> publicRoutes = <String>{'/login', '/register'};
+
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: authViewModel,
     redirect: (context, state) {
       final bool isLoggedIn = authViewModel.isAuthenticated;
-      final bool isLoginRoute = state.matchedLocation == '/login';
+      final bool isPublicRoute = publicRoutes.contains(state.matchedLocation);
 
       if (!isLoggedIn) {
-        return isLoginRoute ? null : '/login';
+        return isPublicRoute ? null : '/login';
       }
-      if (isLoginRoute) {
+      if (isPublicRoute) {
         return '/';
       }
       return null;

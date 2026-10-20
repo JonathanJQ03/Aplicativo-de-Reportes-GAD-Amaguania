@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/l10n/app_strings.dart';
@@ -224,6 +225,23 @@ class _LoginViewState extends State<LoginView> {
                       expand: true,
                       isLoading: auth.isLoading,
                       onPressed: _submit,
+                    ),
+                    const SizedBox(height: AppSpacing.sp3),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          AppStrings.loginNoAccount,
+                          style: AppTypography.body.copyWith(
+                            color: AppColors.contentSecondary,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/register'),
+                          child: const Text(AppStrings.loginGoToRegister),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.sp4),
                     Text(

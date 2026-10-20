@@ -24,6 +24,29 @@ void main() {
     expect(find.text(AppStrings.loginGreeting), findsOneWidget);
   });
 
+  testWidgets('abre el registro y vuelve al login sin sesión', (tester) async {
+    final FakeAuthRepository repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(VeciApp(authRepository: repository));
+    await tester.pumpAndSettle();
+
+    final Finder registerLink = find.text(AppStrings.loginGoToRegister);
+    await tester.ensureVisible(registerLink);
+    await tester.tap(registerLink);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.registerTitle), findsOneWidget);
+    expect(find.text(AppStrings.loginGreeting), findsNothing);
+
+    final Finder loginLink = find.text(AppStrings.registerGoToLogin);
+    await tester.ensureVisible(loginLink);
+    await tester.tap(loginLink);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.loginGreeting), findsOneWidget);
+  });
+
   testWidgets('inicia sesión y muestra la pantalla principal', (tester) async {
     final FakeAuthRepository repository = FakeAuthRepository();
     addTearDown(repository.dispose);
