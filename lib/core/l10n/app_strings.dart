@@ -223,10 +223,29 @@ abstract final class AppStrings {
   static const String authEmailChangeFailed =
       'No pudimos cambiar el correo. Revisa la dirección e intenta de nuevo.';
 
-  // Panel de administración (stub hasta S15).
+  // Panel de administración (S07: login y guard; layout completo en S15).
   static const String adminPanelTitle = 'Panel de administración';
-  static const String adminPanelComingSoon =
-      'El panel para el personal del GAD estará disponible próximamente.';
+  static const String adminLoginSubtitle =
+      'Ingresa con tu cuenta de funcionario del GAD de Amaguaña.';
+  static const String adminLoginSupport =
+      'Usa el correo y la contraseña asignados por el GAD.';
+  static const String adminCheckingAccess = 'Comprobando tus permisos...';
+  static const String adminAccessDeniedTitle = 'Acceso restringido';
+  static const String adminAccessDeniedBody =
+      'Esta sección es exclusiva para el personal autorizado del GAD de '
+      'Amaguaña. Tu cuenta no tiene permisos de administrador.';
+  static const String adminPanelPreparingTitle = 'Panel en preparación';
+  static const String adminPanelPreparingBody =
+      'Tu cuenta tiene acceso de administrador. La bandeja de reportes y la '
+      'moderación se habilitarán en la siguiente etapa.';
+  static const String adminSessionLabel = 'Sesión iniciada como';
+  static const String adminRoleName = 'Administrador del GAD';
+
+  // Página no encontrada.
+  static const String notFoundTitle = 'Página no encontrada';
+  static const String notFoundBody =
+      'La dirección no existe o ya no está disponible.';
+  static const String notFoundBack = 'Volver al inicio';
 
   // Arranque.
   static const String startupErrorTitle = 'No pudimos iniciar la aplicación';

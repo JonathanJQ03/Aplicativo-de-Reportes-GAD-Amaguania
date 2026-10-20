@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// Reglas base de Firebase Storage de VeciApp (S07).
+//
+// Solo una sesión activa puede subir archivos, y únicamente dentro de su
+// propia carpeta. Las rutas de reportes y planillas se habilitan en S10 y
+// S22/S23 con las validaciones de cada funcionalidad. Cualquier ruta no
+// listada queda denegada por defecto.
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Foto de perfil. Todavía no hay pantalla que la use, pero la ruta queda
+    // cerrada a las demás cuentas desde ahora.
+    match /users/{uid}/profile/{fileName} {
+      allow read: if request.auth != null
+        && request.auth.uid == uid;
+
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size <= 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      allow delete: if request.auth != null
+        && request.auth.uid == uid;
+    }
+  }
+}

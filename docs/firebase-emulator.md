@@ -3,9 +3,10 @@
 S01 usa **Firebase Authentication** con correo y contraseña. S03 agrega el
 registro de vecinos y guarda el perfil en **Cloud Firestore**. S05 agrega la
 verificación del correo y el cambio de correo. S06 agrega el consentimiento
-LOPDP y la recuperación de contraseña por enlace. Para no subir claves ni
-archivos de configuración al repositorio, el modo de desarrollo usa un proyecto
-demo y los emuladores locales.
+LOPDP y la recuperación de contraseña por enlace. S07 agrega el rol en
+Firestore, el guard del panel de administración y las reglas base de Firestore
+y Storage. Para no subir claves ni archivos de configuración al repositorio, el
+modo de desarrollo usa un proyecto demo y los emuladores locales.
 
 ## Requisitos
 
@@ -17,17 +18,20 @@ demo y los emuladores locales.
 Desde la raíz del repositorio:
 
 ```bash
-npx firebase-tools emulators:start --only auth,firestore
+npx firebase-tools emulators:start --only auth,firestore,storage
 ```
 
 La configuración está en `firebase.json` y `.firebaserc`:
 
 - Auth: `127.0.0.1:9099`
 - Firestore: `127.0.0.1:8080`
+- Storage: `127.0.0.1:9199`
 - Interfaz de los emuladores: `http://127.0.0.1:4000`
 
-Las reglas de Firestore viven en `firestore.rules` y, en S03, solo permiten a
-cada vecino leer y crear su propio perfil. S07 las ampliará por rol.
+Las reglas de Firestore viven en `firestore.rules` y las de Storage en
+`storage.rules`. Desde S07, Firestore separa los perfiles públicos y privados
+por rol, y Storage solo permite escribir dentro de la carpeta propia. La matriz
+completa está en [`roles-y-acceso.md`](roles-y-acceso.md).
 
 ## 2. Crear un usuario de prueba
 
@@ -45,6 +49,11 @@ Credenciales sugeridas para S01:
 
 - Correo: `vecino@ejemplo.com`
 - Contraseña: `Vecino123!`
+
+Para probar el panel necesitas una cuenta con rol de administrador. Créala en
+el emulador y asigna `users/{uid}.role = "administrador"` desde la interfaz de
+Firestore o con la API local. Los pasos completos están en
+[`roles-y-acceso.md`](roles-y-acceso.md#3-crear-la-primera-cuenta-de-administrador).
 
 ## 3. Ejecutar la app
 
@@ -186,7 +195,34 @@ curl -X POST \
 Después, la contraseña anterior debe fallar y la nueva debe permitir iniciar
 sesión. Esto se verificó en el Samsung SM-A546E de desarrollo.
 
-## 7. Usar un proyecto real de Firebase
+## 7. Roles y acceso (S07)
+
+El rol se guarda en `users/{uid}.role`:
+
+- `vecino` (por defecto);
+- `vecinoVerificado` (cuando el GAD apruebe la residencia, S23);
+- `administrador`.
+
+La app lee ese campo después de iniciar sesión. Si el documento no existe o la
+lectura falla, usa `vecino`. El cliente no puede escribir un rol distinto de
+`vecino`; las reglas bloquean el cambio.
+
+El panel de administración se ejecuta con:
+
+```bash
+flutter run -t lib/main_admin.dart \
+  --dart-define=FIREBASE_EMULATOR_HOST=localhost
+```
+
+Un vecino autenticado termina en **Acceso restringido** y un administrador en
+el marcador **Panel en preparación**. La plataforma web y el layout definitivo
+llegan en S15. En S07 el panel se probó en el teléfono de desarrollo; el guard
+es independiente de la plataforma.
+
+Consulta la matriz de reglas y el seed del administrador en
+[`roles-y-acceso.md`](roles-y-acceso.md).
+
+## 8. Usar un proyecto real de Firebase
 
 Pasa las claves por `--dart-define`, desactiva los emuladores y, si vas a probar
 la verificación real, desactiva el desbloqueo temporal:
@@ -218,5 +254,7 @@ Nunca se versionan estos archivos (ya están en `.gitignore`):
 
 Tampoco se registran en logs correos, contraseñas, cédulas ni teléfonos. No se
 guarda en el repositorio el correo real usado para una prueba. Las reglas de
-Firestore no son abiertas: exigen una sesión activa y que el `uid` coincida con
-el documento.
+Firestore no son abiertas: exigen una sesión activa, que el `uid` coincida con
+el documento o que la cuenta tenga rol de administrador. Storage solo permite
+escribir imágenes dentro de la carpeta del propio usuario. Ninguna regla usa
+`if true`.

@@ -1,56 +1,39 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
-import 'core/l10n/app_strings.dart';
-import 'core/theme/app_colors.dart';
-import 'core/theme/app_spacing.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/app_typography.dart';
+import 'admin_app.dart';
+import 'core/config/firebase_bootstrap.dart';
+import 'core/errors/startup_error_app.dart';
+import 'features/auth/data/firebase_auth_repository.dart';
 
 /// Punto de entrada del panel web de administración.
 ///
-/// En S15 se reemplaza este marcador por el login y el layout del panel.
-void main() {
-  runApp(const _AdminPlaceholderApp());
-}
+/// S07 agrega el login y el guard de rol; el layout del panel se construye en
+/// S15.
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class _AdminPlaceholderApp extends StatelessWidget {
-  const _AdminPlaceholderApp();
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppStrings.adminPanelTitle,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      themeMode: ThemeMode.light,
-      home: Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.adminPanelTitle)),
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.sp4),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.admin_panel_settings_outlined,
-                    size: 64,
-                    color: AppColors.skyStrong,
-                  ),
-                  const SizedBox(height: AppSpacing.sp3),
-                  Text(
-                    AppStrings.adminPanelComingSoon,
-                    style: AppTypography.body.copyWith(
-                      color: AppColors.contentSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
+  try {
+    final FirebaseSetup setup = await FirebaseBootstrap.initialize();
+    if (kDebugMode) {
+      debugPrint(
+        'Firebase local (panel): host=${setup.authEmulatorHost}, '
+        'emulador=${setup.useAuthEmulator}',
+      );
+    }
+    runApp(
+      AdminApp(
+        authRepository: FirebaseAuthRepository(
+          useEmulator: setup.useAuthEmulator,
+          emulatorHost: setup.authEmulatorHost,
         ),
       ),
     );
+  } catch (error) {
+    // Nunca se muestran datos personales ni detalles técnicos al usuario.
+    if (kDebugMode) {
+      debugPrint('No se pudo inicializar Firebase (panel): $error');
+    }
+    runApp(StartupErrorApp(onRetry: main));
   }
 }

@@ -2,31 +2,103 @@ rules_version = '2';
 
 // Reglas de Firestore de VeciApp.
 //
-// TODO(S07): ampliar las reglas por rol (administrador del GAD, reportes,
-// residencias y auditoría). Por ahora solo se permite que cada vecino lea y
-// cree su propio perfil, separando los datos públicos de los sensibles.
+// S07 define el control de acceso por rol. El rol vive en
+// `users/{uid}.role` y solo puede asignarlo el personal del GAD desde la
+// consola o con el Admin SDK; el cliente nunca puede elevar su propio rol.
+// Las colecciones que aún no existen quedan denegadas por defecto.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Consulta el rol del usuario que hace la petición. `get()` se evalúa con
+    // privilegios de reglas y no vuelve a entrar en esta misma regla.
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'administrador';
+    }
+
     match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow create: if request.auth != null && request.auth.uid == uid;
+      // El vecino ve su perfil; el administrador puede consultar los perfiles
+      // para moderar y atender solicitudes.
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Todo registro nace como vecino. No se puede crear una cuenta con rol
+      // de administrador ni de vecino verificado desde la app.
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['displayName', 'role', 'createdAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 120
+        && request.resource.data.role == 'vecino'
+        && request.resource.data.createdAt is timestamp;
+
+      // El dueño solo cambia su nombre visible. El rol y la fecha de creación
+      // quedan fuera del alcance del cliente.
+      // TODO(S23/S24): habilitar cambios de rol o suspensión desde el panel,
+      // siempre con una operación auditada.
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 120;
+
+      allow delete: if false;
     }
 
     match /users_private/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      // RF-06: todo perfil nuevo debe registrar la aceptación del aviso de
+      // Los datos sensibles solo los ve su dueño y el personal del GAD.
+      allow read: if isOwner(uid) || isAdmin();
+
+      // RF-06: todo perfil nuevo registra la aceptación del aviso de
       // privacidad con la hora del servidor y la versión del texto aceptado.
-      allow create: if request.auth != null
-        && request.auth.uid == uid
+      // RNF-03: los campos sensibles quedan separados de `users`.
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasAll([
+          'nombres',
+          'apellidos',
+          'cedula',
+          'email',
+          'createdAt',
+          'consentVersion',
+          'consentAcceptedAt',
+        ])
+        && request.resource.data.keys().hasOnly([
+          'nombres',
+          'apellidos',
+          'cedula',
+          'email',
+          'phone',
+          'createdAt',
+          'consentVersion',
+          'consentAcceptedAt',
+        ])
+        && request.resource.data.nombres is string
+        && request.resource.data.apellidos is string
+        && request.resource.data.cedula is string
+        && request.resource.data.email is string
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.consentVersion is string
         && request.resource.data.consentAcceptedAt is timestamp
-        && request.resource.data.consentVersion is string;
+        && (
+          !request.resource.data.keys().hasAny(['phone'])
+            || request.resource.data.phone is string
+        );
+
       // S05 permite cambiar únicamente el correo privado cuando el dueño ya
       // verificó el nuevo correo en Firebase Auth. El resto de campos queda
       // inmutable desde el cliente.
-      allow update: if request.auth != null
-        && request.auth.uid == uid
+      allow update: if isOwner(uid)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email'])
         && request.resource.data.email is string;
+
+      allow delete: if false;
     }
   }
 }

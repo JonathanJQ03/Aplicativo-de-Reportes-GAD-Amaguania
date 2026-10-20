@@ -35,6 +35,13 @@ abstract interface class AuthRepository {
     required bool consentAccepted,
   });
 
+  /// Lee el rol actual del perfil público del usuario.
+  ///
+  /// La implementación devuelve [UserRole.vecino] si el documento no existe o
+  /// no se puede leer: nunca eleva privilegios por un fallo de red o un dato
+  /// inesperado.
+  Future<UserRole> loadRole(String uid);
+
   /// Cierra la sesión actual.
   Future<void> signOut();
 

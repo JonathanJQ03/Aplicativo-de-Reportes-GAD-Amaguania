@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../errors/not_found_view.dart';
 import '../../features/auth/presentation/views/forgot_password_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
@@ -80,7 +81,6 @@ GoRouter createAppRouter(AuthViewModel authViewModel) {
         builder: (context, state) => const ProfileView(),
       ),
     ],
-    // TODO(S07): agregar errorBuilder con una pantalla de "página no
-    // encontrada" y guards por rol.
+    errorBuilder: (context, state) => const NotFoundView(),
   );
 }
