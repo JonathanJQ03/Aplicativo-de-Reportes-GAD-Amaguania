@@ -2,7 +2,7 @@
 
 **Última sesión cerrada:** S07 — Roles y control de acceso
 **Fecha:** 2026-10-20
-**Rama:** `feature/s07-roles-acceso` (se integra en `main` al cerrar)
+**Rama:** `main` (S07 integrada)
 **Siguiente sesión:** S08 — Navegación principal, inicio y perfil
 
 > Este documento es un apoyo para retomar el trabajo. La fuente de verdad del
@@ -166,9 +166,9 @@ Puntos importantes:
 
 ## 5. Estado de Git
 
-- `main` contiene S00–S06. La rama `feature/s07-roles-acceso` contiene S07 y se
-  integra con un merge al cerrar.
-- La rama `feature/s06-consentimiento-recuperacion` se conserva como historial.
+- `main` contiene S00–S07. La rama `feature/s07-roles-acceso` se integró con un
+  merge y se conserva como historial.
+- La rama `feature/s06-consentimiento-recuperacion` también se conserva.
 - `AGENTS.md` y `DESIGN.md` siguen sin versionar en la raíz. No borrarlos ni
   commitearlos sin confirmar con el usuario.
 - `android/gradle.properties` tiene un ajuste local para compilar en este equipo

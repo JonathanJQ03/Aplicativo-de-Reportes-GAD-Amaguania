@@ -170,6 +170,8 @@ pendiente** y no se inicia S08 hasta que el usuario escriba “continuar”.
 - (2026-10-20) Se creó `storage.rules` en S07 con reglas base deny-by-default.
   Las rutas de fotos de reportes (S10) y planillas (S22/S23) se agregan en sus
   sesiones.
+- (2026-10-20) La rama `feature/s07-roles-acceso` se integró en `main` con un
+  merge. S08 parte de `main`.
 
 ## Deuda y TODO
 
